@@ -1,0 +1,10 @@
+services:
+
+  docker_pull_build:
+    image: golang:1.22-alpine
+    volumes:
+      - "./build:/opt/build"
+      - "./core:/opt/core"
+      - "./cache/mod:/go/pkg/mod"
+    working_dir: /opt/core
+    command: go build -o /opt/build

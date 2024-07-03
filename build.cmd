@@ -1,0 +1,1 @@
+docker-compose run --rm docker_pull_build
