@@ -64,6 +64,13 @@ type Layer struct {
 	Digest    string `json:"digest"`
 }
 
+type TarManifest struct {
+	SchemaVersion int     `json:"schemaVersion"`
+	MediaType     string  `json:"mediaType"`
+	Config        Config  `json:"config"`
+	Layers        []Layer `json:"layers"`
+}
+
 func GetManifests(imageName string, tag string, os string, architecture string, auth_token string, mirror string, proxy string) Manifest {
 	header := map[string]string{
 		"Authorization": "Bearer " + auth_token,

@@ -14,18 +14,20 @@ type Args struct {
 	Architecture string
 	Os           string
 	Cache        string
+	ThreadCount  int
+	IsLoad       bool
 }
 
 func LoadArgs() Args {
-	//定义一个字符串变量
+
+	var imageName string
+	flag.StringVar(&imageName, "i", "", "image name,not empty")
+
 	var mirror string
 	flag.StringVar(&mirror, "m", "", "mirror url , docker.jpy.wang")
 
 	var proxy string
 	flag.StringVar(&proxy, "proxy", "", "proxy server")
-
-	var imageName string
-	flag.StringVar(&imageName, "i", "lianshufeng/springboot", "image name,not empty")
 
 	var architecture string
 	flag.StringVar(&architecture, "architecture", "amd64", "platform.architecture")
@@ -35,6 +37,12 @@ func LoadArgs() Args {
 
 	var cache string
 	flag.StringVar(&cache, "cache", "_cache", "cache directory")
+
+	var ThreadCount int
+	flag.IntVar(&ThreadCount, "thread", 6, "thead number")
+
+	var IsLoad bool
+	flag.BoolVar(&IsLoad, "load", true, "load image")
 
 	flag.Parse()
 
@@ -66,11 +74,6 @@ func LoadArgs() Args {
 		mirror = strings.Join(imageNames[0:len(imageNames)-2], "/")
 	}
 
-	//增加官方库library
-	//if strings.Index(imageName, "/") == -1 {
-	//	imageName = "library/" + imageName
-	//}
-
 	return Args{
 		ImageName:    imageName,
 		Tag:          tag,
@@ -79,5 +82,7 @@ func LoadArgs() Args {
 		Architecture: architecture,
 		Os:           platform_os,
 		Cache:        cache,
+		ThreadCount:  ThreadCount,
+		IsLoad:       IsLoad,
 	}
 }
