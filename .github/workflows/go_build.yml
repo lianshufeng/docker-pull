@@ -57,17 +57,6 @@ jobs:
         LATEST_RELEASE=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/${{ github.repository }}/releases/latest)
         echo "::set-output name=upload_url::$(echo $LATEST_RELEASE | jq -r '.upload_url')"
         echo "::set-output name=tag_name::$(echo $LATEST_RELEASE | jq -r '.tag_name')"
-
-    - name: Display release upload URL and tag name
-      run: |
-        echo "Release Upload URL: ${{ steps.get_release_info.outputs.upload_url }}"
-        echo "Tag Name: ${{ steps.get_release_info.outputs.tag_name }}"
-
-    - name: Display release upload path
-      run: |
-        echo "Upload Path: $(echo ${{ steps.get_release_info.outputs.upload_url }} | sed 's/{?name,label}//')"
-
-          
     - name: Upload Artifact
       uses: actions/upload-release-asset@v1
       env:
@@ -97,12 +86,22 @@ jobs:
       run: |
         $VERSION = Get-Content -Path .\VERSION
         Write-Output "::set-output name=version::$VERSION"
+
+    - name: Get latest release info
+      id: get_release_info
+      run: |
+        $LATEST_RELEASE = Invoke-RestMethod -Uri "https://api.github.com/repos/${{ github.repository }}/releases/latest" -Headers @{Authorization = "Bearer $env:GITHUB_TOKEN"}
+        $uploadUrl = $LATEST_RELEASE.upload_url.Replace('{?name,label}', '')
+        $tagName = $LATEST_RELEASE.tag_name
+        Write-Output "upload_url=$uploadUrl" | Out-String | Invoke-Expression
+        Write-Output "tag_name=$tagName" | Out-String | Invoke-Expression
+    
     - name: Upload Artifact
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ needs.release.create_release.outputs.upload_url }}
+        upload_url: ${{ steps.get_release_info.outputs.upload_url }}"
         asset_path: .\docker-pull.exe
         asset_name: docker-pull.exe
         asset_content_type: application/octet-stream
