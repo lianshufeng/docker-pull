@@ -5,6 +5,6 @@ services:
     volumes:
       - "./build:/opt/build"
       - "./core:/opt/core"
-      - "./cache/mod:/go/pkg/mod"
+      - "./_cache/mod:/go/pkg/mod"
     working_dir: /opt/core
     command: go build -o /opt/build
