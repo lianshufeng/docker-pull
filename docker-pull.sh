@@ -1,2 +1,2 @@
 #!/bin/bash
-docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v ${pwd}:/work lianshufeng/docker-pull -i hello-world
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v ${PWD}:/work lianshufeng/docker-pull hello-world

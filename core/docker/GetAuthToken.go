@@ -16,7 +16,7 @@ func GetAuthToken(imageName string, accept string, mirror string, proxy string) 
 	header := map[string]string{
 		"Accept": accept,
 	}
-	body := Net_Get("auth.docker.io", fmt.Sprintf("token?service=registry.docker.io&scope=repository:%s:pull", imageName), header, mirror, proxy)
+	body, _ := Net_Get("auth.docker.io", fmt.Sprintf("token?service=registry.docker.io&scope=repository:%s:pull", imageName), header, mirror, proxy)
 	var result AuthToken
 	json.Unmarshal(body, &result)
 	return result

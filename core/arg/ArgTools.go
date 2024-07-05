@@ -2,6 +2,7 @@ package arg_tools
 
 import (
 	"flag"
+	"fmt"
 	"os"
 	"strings"
 )
@@ -21,14 +22,11 @@ type Args struct {
 
 func LoadArgs() Args {
 
-	var imageName string
-	flag.StringVar(&imageName, "i", "", "image name,not empty")
-
 	var mirror string
 	flag.StringVar(&mirror, "m", "", "mirror url , docker.jpy.wang")
 
 	var proxy string
-	flag.StringVar(&proxy, "proxy", "", "proxy server")
+	flag.StringVar(&proxy, "proxy", "", "proxy server , http://127.0.0.1:1080")
 
 	var architecture string
 	flag.StringVar(&architecture, "architecture", "amd64", "platform.architecture")
@@ -50,10 +48,14 @@ func LoadArgs() Args {
 
 	flag.Parse()
 
-	if imageName == "" {
+	if len(os.Args) <= 1 {
+		fmt.Println("docker-pull [-config] <imageName>")
+		fmt.Println("eg :", "docker-pull -proxy http://127.0.0.1:1080 -thread 5 nginx ")
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
+
+	imageName := os.Args[len(os.Args)-1:][0]
 
 	// cache 判断首字母是否为 /
 	if cache[0] != '/' && !strings.ContainsRune(cache, ':') {

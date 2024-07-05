@@ -77,8 +77,13 @@ func GetManifests(imageName string, tag string, accept string, platform_os strin
 		"Authorization": "Bearer " + auth_token,
 		"Accept":        accept,
 	}
-	body := Net_Get("registry-1.docker.io", fmt.Sprintf("v2/%s/manifests/%s", imageName, tag), header, mirror, proxy)
+	body, code := Net_Get("registry-1.docker.io", fmt.Sprintf("v2/%s/manifests/%s", imageName, tag), header, mirror, proxy)
 	//fmt.Println(string(body))
+	//fmt.Println("code :", code)
+	if code != 200 {
+		fmt.Println("not found :", imageName, ", code :", code)
+		os.Exit(0)
+	}
 
 	var obj map[string]interface{}
 	json.Unmarshal(body, &obj)

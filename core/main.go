@@ -2,17 +2,14 @@ package main
 
 import (
 	"archive/tar"
-	"crypto/sha256"
 	arg_tools "docker-pull/arg"
 	docker_tools "docker-pull/docker"
 	"docker-pull/file"
-	"encoding/hex"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"github.com/panjf2000/ants"
 	"os"
-	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -39,11 +36,15 @@ func InitEnv(ConfigENV map[string]string) {
 	}
 }
 
-func hashSHA256(parentID string, ublob string) string {
-	input := parentID + "\n" + ublob + "\n"
-	hasher := sha256.New()
-	hasher.Write([]byte(input))
-	return hex.EncodeToString(hasher.Sum(nil))
+//func hashSHA256(parentID string, ublob string) string {
+//	input := parentID + "\n" + ublob + "\n"
+//	hasher := sha256.New()
+//	hasher.Write([]byte(input))
+//	return hex.EncodeToString(hasher.Sum(nil))
+//}
+
+func MakeLayerId(parentID string, ublob string) string {
+	return ublob[7:]
 }
 
 func DownLoadLayer(task DownLoadLayerTask) {
@@ -78,7 +79,7 @@ func PullImage(imageName string, tag string, args arg_tools.Args) {
 	for i := range manifest.Layers {
 		//取出层
 		layer := manifest.Layers[i]
-		fake_layerid := hashSHA256(parentID, layer.Digest)
+		fake_layerid := MakeLayerId(parentID, layer.Digest)
 		//层的目录
 		layerFile := cacheDirectory + "/" + fake_layerid + ".gzip.tar"
 		//下载任务
@@ -120,7 +121,7 @@ func PullImage(imageName string, tag string, args arg_tools.Args) {
 	for i := range manifest.Layers {
 		//取出层
 		layer := manifest.Layers[i]
-		fake_layerid := hashSHA256(parentID, layer.Digest)
+		fake_layerid := MakeLayerId(parentID, layer.Digest)
 		//记录最后一层的id
 		LastLayerId = fake_layerid
 		//层的目录
@@ -152,7 +153,7 @@ func PullImage(imageName string, tag string, args arg_tools.Args) {
 	// 压缩目录为tar格式
 	pwdPath, _ := os.Getwd()
 	outputFilePath := filepath.Clean(pwdPath + "/" + cacheName + ".tar")
-	fmt.Println("compress file:", path.Base(outputFilePath))
+	fmt.Println("compress file:", filepath.Base(outputFilePath))
 	outputFile, err := os.Create(outputFilePath)
 	defer outputFile.Close()
 	if err != nil {
@@ -162,7 +163,6 @@ func PullImage(imageName string, tag string, args arg_tools.Args) {
 	tarWriter := tar.NewWriter(outputFile)
 	defer tarWriter.Close()
 	file.TarDir(projectDirectory, tarWriter)
-	fmt.Println("pull complete:", outputFilePath)
 
 	//删除临时目录
 	os.RemoveAll(projectDirectory)

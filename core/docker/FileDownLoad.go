@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -104,7 +105,7 @@ func DownLoad(url string, headers map[string]string, DestFile string, proxy stri
 
 		if resp.Status != NormalRespCode {
 			if resp.Status == ErrRespCode {
-				fmt.Println("download complete")
+				fmt.Println("download complete :", path.Base(DestFile))
 				process_file.Close()
 				file.Remove(process_file_name)
 				IsDownLoadDone = nil

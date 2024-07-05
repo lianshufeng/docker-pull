@@ -18,7 +18,7 @@ func MakeUrl(hostName string, uri string, mirror string) string {
 	return fmt.Sprintf("https://%s/%s", _hostName, uri)
 }
 
-func Net_Get(hostName string, uri string, headers map[string]string, mirror string, proxy string) []byte {
+func Net_Get(hostName string, uri string, headers map[string]string, mirror string, proxy string) ([]byte, int) {
 	url := MakeUrl(hostName, uri, mirror)
 	fmt.Println("access : ", url)
 	req, err := http.NewRequest("GET", url, strings.NewReader(""))
@@ -33,12 +33,12 @@ func Net_Get(hostName string, uri string, headers map[string]string, mirror stri
 	resp, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
-		return []byte{}
+		return []byte{}, resp.StatusCode
 	}
 	defer resp.Body.Close()
 	// 读取响应体内容
 	body, err := io.ReadAll(resp.Body)
-	return body
+	return body, resp.StatusCode
 }
 
 func MakeHttpClient(proxy string) *http.Client {
