@@ -1,0 +1,32 @@
+name: Release Workflow
+on:
+  release:
+    types: [published]
+
+jobs:
+  build_linux:
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name: Setup Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: '^1.21'
+    - name: Build
+      run: cd ./core && go build -o ../docker-pull .
+    - name: Prepare Release
+      id: prepare_release
+      run: |
+        VERSION=$(cat VERSION)
+        echo ::set-output name=version::$VERSION
+    
+    - name: Upload release asset
+      uses: actions/upload-artifact@v2
+      with:
+        name: release-asset
+        path: ./docker-pull
+        asset_path: ./docker-pull
+        asset_name: docker-pull
+        asset_content_type: application/octet-stream
