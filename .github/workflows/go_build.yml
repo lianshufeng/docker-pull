@@ -10,7 +10,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: write
+      pull-requests: write
+      repository-projects: write
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -46,6 +49,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./${{ steps.prepare_release.outputs.version }}/docker-pull
+        asset_path: ./docker-pull
         asset_name: docker-pull
         asset_content_type: application/octet-stream
