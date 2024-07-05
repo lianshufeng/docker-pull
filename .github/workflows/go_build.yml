@@ -54,7 +54,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        upload_url: ${{ jobs.release.steps.create_release.outputs.upload_url }}
         asset_path: ./docker-pull
         asset_name: docker-pull
         asset_content_type: application/octet-stream
@@ -83,7 +83,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        upload_url: ${{ jobs.release.steps.create_release.outputs.upload_url }}
         asset_path: .\docker-pull.exe
         asset_name: docker-pull.exe
         asset_content_type: application/octet-stream
