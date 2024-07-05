@@ -89,12 +89,11 @@ jobs:
 
     - name: Get latest release info
       id: get_release_info
+      shell: pwsh
       run: |
-        $LATEST_RELEASE = Invoke-RestMethod -Uri "https://api.github.com/repos/${{ github.repository }}/releases/latest" -Headers @{Authorization = "Bearer $env:GITHUB_TOKEN"}
-        $uploadUrl = $LATEST_RELEASE.upload_url.Replace('{?name,label}', '')
-        $tagName = $LATEST_RELEASE.tag_name
-        Write-Output "upload_url=$uploadUrl" | Out-String | Invoke-Expression
-        Write-Output "tag_name=$tagName" | Out-String | Invoke-Expression
+        $LATEST_RELEASE = Invoke-RestMethod -Uri "https://api.github.com/repos/${{ github.repository }}/releases/latest" -Headers @{"Authorization"="Bearer ${{ secrets.GITHUB_TOKEN }}"}
+        echo "::set-output name=upload_url::$( $LATEST_RELEASE.upload_url )"
+        echo "::set-output name=tag_name::$( $LATEST_RELEASE.tag_name )"
     
     - name: Upload Artifact
       uses: actions/upload-release-asset@v1
