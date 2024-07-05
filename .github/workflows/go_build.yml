@@ -7,6 +7,7 @@ on:
   push:
     branches: [ "release" ]
 
+
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -36,11 +37,17 @@ jobs:
       - name: Set Upload Url
         id: set_upload_url
         run: UPLOAD_URL=${{ steps.create_release.outputs.upload_url }}
+      - name: print url
+        id: print_upload_url
+        run: echo ${{ steps.create_release.outputs.upload_url }}
     
   build_linux:
     runs-on: ubuntu-latest
     permissions: write-all
     steps:
+    - name: print url
+      id: print_upload_url
+      run: echo ${{ needs.release.outputs.upload_url }}
     - name: Checkout code
       uses: actions/checkout@v2
     - name: Setup Go
