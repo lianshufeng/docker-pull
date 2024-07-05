@@ -19,13 +19,17 @@ jobs:
       uses: actions/setup-go@v2
       with:
         go-version: '^1.21'
+
     - name: Build
-      run: cd ./core && go build -o ../docker-pull .
+      run: |
+        cd .\core
+        go build -o ..\docker-pull.exe .
+
     - name: Prepare Release
       id: prepare_release
       run: |
-        VERSION=$(cat VERSION)
-        echo ::set-output name=version::$VERSION
+        $VERSION = Get-Content -Path .\VERSION
+        Write-Output "::set-output name=version::$VERSION"
 
     - name: Create Release
       id: create_release
@@ -42,6 +46,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./docker-pull
-        asset_name: docker-pull
+        asset_path: .\docker-pull.exe
+        asset_name: docker-pull.exe
         asset_content_type: application/octet-stream
