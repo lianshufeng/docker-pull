@@ -19,7 +19,7 @@ func DownLoadLayer(imageName string, ublob string, mirror string, proxy string, 
 	headers := map[string]string{
 		"Authorization": "Bearer " + authToken.Token,
 	}
-	err := DownLoad(url, headers, outputFile)
+	err := DownLoad(url, headers, outputFile, proxy)
 
 	//如果有错误，延迟后重新下载
 	if err != nil {

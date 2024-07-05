@@ -13,6 +13,7 @@ import (
 	"github.com/panjf2000/ants"
 	"os"
 	"path"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
@@ -150,7 +151,7 @@ func PullImage(imageName string, tag string, args arg_tools.Args) {
 
 	// 压缩目录为tar格式
 	pwdPath, _ := os.Getwd()
-	outputFilePath := pwdPath + "/" + cacheName + ".tar"
+	outputFilePath := filepath.Clean(pwdPath + "/" + cacheName + ".tar")
 	fmt.Println("compress file:", path.Base(outputFilePath))
 	outputFile, err := os.Create(outputFilePath)
 	defer outputFile.Close()
@@ -168,7 +169,7 @@ func PullImage(imageName string, tag string, args arg_tools.Args) {
 
 	//载入
 	if args.IsLoad {
-		fmt.Println("load image:", outputFilePath)
+		fmt.Println("load image:", filepath.Base(outputFilePath))
 		docker_tools.ImageLoad(outputFilePath)
 	}
 
@@ -184,8 +185,6 @@ func main() {
 		"DOCKER_API_VERSION": args.DockerApiVersion,
 	})
 
-	//ret, _ := json.Marshal(args)
-	//fmt.Println("task : " + string(ret))
 	if args.ImageName == "" {
 		flag.PrintDefaults()
 		return

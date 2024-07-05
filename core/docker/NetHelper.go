@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	url2 "net/url"
 	"strings"
 )
 
@@ -27,7 +28,8 @@ func Net_Get(hostName string, uri string, headers map[string]string, mirror stri
 		req.Header.Set(key, value)
 	}
 
-	client := &http.Client{}
+	// 创建 http 客户端
+	client := MakeHttpClient(proxy)
 	resp, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
@@ -37,4 +39,18 @@ func Net_Get(hostName string, uri string, headers map[string]string, mirror stri
 	// 读取响应体内容
 	body, err := io.ReadAll(resp.Body)
 	return body
+}
+
+func MakeHttpClient(proxy string) *http.Client {
+	//使用代理
+	transport := &http.Transport{}
+	if proxy != "" {
+		proxyUrl, _ := url2.Parse(proxy)
+		transport = &http.Transport{
+			Proxy: http.ProxyURL(proxyUrl),
+		}
+	}
+	return &http.Client{
+		Transport: transport,
+	}
 }

@@ -31,7 +31,7 @@ func CompleteFile(DestFile string) bool {
 	return file.IsExist(DestFile) && !file.IsExist(process_file_name)
 }
 
-func DownLoad(url string, headers map[string]string, DestFile string) error {
+func DownLoad(url string, headers map[string]string, DestFile string, proxy string) error {
 	// 进度文件
 	process_file_name := MakeProcessFileName(DestFile)
 
@@ -87,7 +87,8 @@ func DownLoad(url string, headers map[string]string, DestFile string) error {
 		}
 		req.Header.Set("Range", range01)
 
-		client := &http.Client{}
+		// 创建 http 客户端
+		client := MakeHttpClient(proxy)
 		resp, err := client.Do(req)
 		if err != nil {
 			fmt.Println("request error:", err)
