@@ -24,7 +24,7 @@ func ImagePull(imageName string, pullOptions image.PullOptions) bool {
 
 	// 开始拉取镜像
 	if err != nil {
-		fmt.Printf("Error pulling image: %v\n", err)
+		fmt.Println("Error pulling image: %v\n", err)
 		return false
 	}
 	var reader = io.TeeReader(pullResponse, os.Stdout) // 将读取到的数据同时输出到标准输出
@@ -149,15 +149,15 @@ func ImageLoad(FileName string) bool {
 	defer response.Body.Close()
 	// 开始拉取镜像
 	if err != nil {
-		fmt.Printf("Error load image: %v\n", err)
+		fmt.Println("Error load image: %v\n", err)
 		return false
 	}
 
 	var reader = io.TeeReader(response.Body, os.Stdout) // 将读取到的数据同时输出到标准输出
 	var bufReader = bufio.NewReader(reader)
-	// 打印拉取进度
+	//打印拉取进度
 	for {
-		line, err := bufReader.ReadString('\n')
+		_, err := bufReader.ReadString('\n')
 		if err != nil {
 			if err == io.EOF {
 				break
@@ -165,7 +165,8 @@ func ImageLoad(FileName string) bool {
 			fmt.Println("Error reading line:", err)
 			return false
 		}
-		fmt.Println("load:", string(line))
+		//fmt.Println("load:", string(line))
+
 	}
 	return true
 

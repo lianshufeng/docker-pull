@@ -72,7 +72,7 @@ func DownLoad(url string, headers map[string]string, DestFile string) error {
 		bfb = countArr[2]
 	}
 
-	fmt.Println(fmt.Sprintf("download：%d, total：%d, process：%s", count, total, bfb))
+	//fmt.Println(fmt.Sprintf("download：%d, total：%d, process：%s", count, total, bfb))
 
 	for {
 		req, err := http.NewRequest(http.MethodGet, url, nil)

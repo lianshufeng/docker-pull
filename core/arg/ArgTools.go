@@ -7,15 +7,16 @@ import (
 )
 
 type Args struct {
-	ImageName    string
-	Tag          string
-	Mirror       string
-	Proxy        string
-	Architecture string
-	Os           string
-	Cache        string
-	ThreadCount  int
-	IsLoad       bool
+	ImageName        string
+	Tag              string
+	Mirror           string
+	Proxy            string
+	Architecture     string
+	Os               string
+	Cache            string
+	ThreadCount      int
+	IsLoad           bool
+	DockerApiVersion string
 }
 
 func LoadArgs() Args {
@@ -43,6 +44,9 @@ func LoadArgs() Args {
 
 	var IsLoad bool
 	flag.BoolVar(&IsLoad, "load", true, "load image")
+
+	var DockerApiVersion string
+	flag.StringVar(&DockerApiVersion, "docker_api_version", "1.30", "DOCKER_API_VERSION")
 
 	flag.Parse()
 
@@ -75,14 +79,15 @@ func LoadArgs() Args {
 	}
 
 	return Args{
-		ImageName:    imageName,
-		Tag:          tag,
-		Mirror:       mirror,
-		Proxy:        proxy,
-		Architecture: architecture,
-		Os:           platform_os,
-		Cache:        cache,
-		ThreadCount:  ThreadCount,
-		IsLoad:       IsLoad,
+		ImageName:        imageName,
+		Tag:              tag,
+		Mirror:           mirror,
+		Proxy:            proxy,
+		Architecture:     architecture,
+		Os:               platform_os,
+		Cache:            cache,
+		ThreadCount:      ThreadCount,
+		IsLoad:           IsLoad,
+		DockerApiVersion: DockerApiVersion,
 	}
 }

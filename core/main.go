@@ -19,6 +19,10 @@ import (
 	"time"
 )
 
+const (
+	DefaultAccept = "application/vnd.docker.distribution.manifest.v2+json"
+)
+
 type DownLoadLayerTask struct {
 	Layer        docker_tools.Layer
 	Fake_layerid string
@@ -28,8 +32,10 @@ type DownLoadLayerTask struct {
 	Args         arg_tools.Args
 }
 
-func InitEnv() {
-	os.Setenv("DOCKER_API_VERSION", "1.30")
+func InitEnv(ConfigENV map[string]string) {
+	for name, _ := range ConfigENV {
+		os.Setenv(name, ConfigENV[name])
+	}
 }
 
 func hashSHA256(parentID string, ublob string) string {
@@ -44,12 +50,13 @@ func DownLoadLayer(task DownLoadLayerTask) {
 }
 
 func PullImage(imageName string, tag string, args arg_tools.Args) {
-	//获取token
-	authToken := docker_tools.GetAuthToken(imageName, "application/vnd.docker.distribution.manifest.v2+json", args.Mirror, args.Proxy)
-	fmt.Println("AuthToken:", authToken.Token)
 
-	manifest := docker_tools.GetManifests(imageName, tag, args.Os, args.Architecture, authToken.Token, args.Mirror, args.Proxy)
-	fmt.Println("manifests:", manifest)
+	//获取token
+	authToken := docker_tools.GetAuthToken(imageName, DefaultAccept, args.Mirror, args.Proxy)
+	//fmt.Println("AuthToken:", authToken.Token)
+
+	manifest := docker_tools.GetManifests(imageName, tag, DefaultAccept, args.Os, args.Architecture, authToken.Token, args.Mirror, args.Proxy)
+	//fmt.Println("manifests:", manifest)
 
 	//创建缓存目录
 	cacheName := strings.ReplaceAll(imageName, "/", "_") + "@" + tag
@@ -62,11 +69,10 @@ func PullImage(imageName string, tag string, args arg_tools.Args) {
 	config_ret := docker_tools.GetConfigManifests(imageName, manifest.Config.Digest, authToken.Token, args.Mirror, args.Proxy)
 	os.WriteFile(config_json_file, config_ret, os.ModePerm)
 
-	//var pool *Pool
+	//线程池
 	pool, _ := ants.NewPool(args.ThreadCount)
 	defer pool.Release()
 	var wg sync.WaitGroup
-
 	var parentID string
 	for i := range manifest.Layers {
 		//取出层
@@ -74,7 +80,6 @@ func PullImage(imageName string, tag string, args arg_tools.Args) {
 		fake_layerid := hashSHA256(parentID, layer.Digest)
 		//层的目录
 		layerFile := cacheDirectory + "/" + fake_layerid + ".gzip.tar"
-
 		//下载任务
 		task := DownLoadLayerTask{
 			Output:       layerFile,
@@ -84,7 +89,6 @@ func PullImage(imageName string, tag string, args arg_tools.Args) {
 			Layer:        layer,
 			Args:         args,
 		}
-
 		//添加任务
 		wg.Add(1)
 		_ = pool.Submit(func() {
@@ -92,9 +96,7 @@ func PullImage(imageName string, tag string, args arg_tools.Args) {
 			fmt.Println("download layer:", layer.Digest)
 			DownLoadLayer(task)
 		})
-
 	}
-
 	// 等待所有协程执行完成
 	wg.Wait()
 
@@ -147,7 +149,8 @@ func PullImage(imageName string, tag string, args arg_tools.Args) {
 	os.WriteFile(projectDirectory+"/repositories", repositoriesJson, os.ModePerm)
 
 	// 压缩目录为tar格式
-	outputFilePath := args.Cache + "/" + cacheName + ".tar"
+	pwdPath, _ := os.Getwd()
+	outputFilePath := pwdPath + "/" + cacheName + ".tar"
 	fmt.Println("compress file:", path.Base(outputFilePath))
 	outputFile, err := os.Create(outputFilePath)
 	defer outputFile.Close()
@@ -166,20 +169,23 @@ func PullImage(imageName string, tag string, args arg_tools.Args) {
 	//载入
 	if args.IsLoad {
 		fmt.Println("load image:", outputFilePath)
-		ret := docker_tools.ImageLoad(outputFilePath)
-		fmt.Println("load image: ", ret)
+		docker_tools.ImageLoad(outputFilePath)
 	}
+
+	fmt.Println("image save :", outputFilePath)
 
 }
 
 func main() {
-	//环境变量
-	InitEnv()
-
 	//读取命令行参数
 	args := arg_tools.LoadArgs()
-	ret, _ := json.Marshal(args)
-	fmt.Println("task : " + string(ret))
+	//环境变量
+	InitEnv(map[string]string{
+		"DOCKER_API_VERSION": args.DockerApiVersion,
+	})
+
+	//ret, _ := json.Marshal(args)
+	//fmt.Println("task : " + string(ret))
 	if args.ImageName == "" {
 		flag.PrintDefaults()
 		return

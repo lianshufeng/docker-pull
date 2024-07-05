@@ -3,6 +3,7 @@ package docker_tools
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 )
 
 type Manifest_v1 struct {
@@ -71,19 +72,19 @@ type TarManifest struct {
 	Layers        []Layer `json:"layers"`
 }
 
-func GetManifests(imageName string, tag string, os string, architecture string, auth_token string, mirror string, proxy string) Manifest {
+func GetManifests(imageName string, tag string, accept string, platform_os string, architecture string, auth_token string, mirror string, proxy string) Manifest {
 	header := map[string]string{
 		"Authorization": "Bearer " + auth_token,
-		"Accept":        "application/vnd.docker.distribution.manifest.v2+json",
+		"Accept":        accept,
 	}
-	body := Net_Get("registry.hub.docker.com", fmt.Sprintf("v2/%s/manifests/%s", imageName, tag), header, mirror, proxy)
-	fmt.Println(string(body))
+	body := Net_Get("registry-1.docker.io", fmt.Sprintf("v2/%s/manifests/%s", imageName, tag), header, mirror, proxy)
+	//fmt.Println(string(body))
 
 	var obj map[string]interface{}
 	json.Unmarshal(body, &obj)
 	if obj["schemaVersion"] == nil {
-		fmt.Println("schemaVersion is nil")
-		return Manifest{}
+		//异常
+		panic("request manifests error..")
 	}
 
 	mediaType := obj["mediaType"].(string)
@@ -92,70 +93,24 @@ func GetManifests(imageName string, tag string, os string, architecture string, 
 		var manifest Manifest
 		json.Unmarshal(body, &manifest)
 		return manifest
-	} else if mediaType == "application/vnd.oci.image.index.v1+json" {
+	} else if mediaType == "application/vnd.oci.image.manifest.v1+json" {
+		var manifest Manifest
+		json.Unmarshal(body, &manifest)
+		return manifest
+	} else if mediaType == "application/vnd.oci.image.index.v1+json" { //oci 选择镜像
 		var manifest_v1 Manifest_v1
 		json.Unmarshal(body, &manifest_v1)
 		for i := range manifest_v1.Manifests {
 			platform := manifest_v1.Manifests[i].Platform
-			if platform.Os == os && platform.Architecture == architecture {
-				return Manifest{
-					SchemaVersion: manifest_v1.SchemaVersion,
-					MediaType:     manifest_v1.MediaType,
-					Config: Config{
-						MediaType: manifest_v1.Manifests[i].MediaType,
-						Size:      manifest_v1.Manifests[i].Size,
-						Digest:    manifest_v1.Manifests[i].Digest,
-					},
-				}
+			if platform.Os == platform_os && platform.Architecture == architecture {
+				_accept := manifest_v1.Manifests[i].MediaType
+				_auth_token := GetAuthToken(imageName, _accept, mirror, proxy).Token
+				return GetManifests(imageName, manifest_v1.Manifests[i].Digest, _accept, platform_os, architecture, _auth_token, mirror, proxy)
 			}
 		}
 	}
-
+	err := fmt.Errorf("not found : ", imageName+":"+tag+"@"+platform_os+"/"+architecture)
+	fmt.Fprintf(os.Stderr, "错误: %v\n", err)
+	os.Exit(1)
 	return Manifest{}
-
-	//if schemaVersion == 1 {
-	//	var manifests Manifests
-	//	json.Unmarshal(body, &manifests)
-	//	return manifests
-	//} else if schemaVersion == 2 {
-	//	var manifests Manifests2
-	//	json.Unmarshal(body, &manifests)
-	//
-	//	for i := range manifests.Manifests {
-	//		platform := manifests.Manifests[i].Platform
-	//		if platform.Os == os && platform.Architecture == architecture {
-	//			return Manifests{
-	//				SchemaVersion: manifests.SchemaVersion,
-	//				Name:          imageName,
-	//				Tag:           tag,
-	//				Architecture:  platform.Architecture,
-	//				FsLayers: []FsLayer{
-	//					{
-	//						BlobSum: manifests.Manifests[i].Digest,
-	//					},
-	//				},
-	//			}
-	//		}
-	//	}
-	//}
-	//return Manifests{}
 }
-
-//var data map[string]interface{}
-//err := json.Unmarshal(body, &data)
-//fmt.Println(err)
-
-//兼容两种返回结果
-//if data["manifests"] != nil {
-//for _, v := range m {
-//	// 使用 reflect.ValueOf 获取反射值
-//	value := reflect.ValueOf(v)
-//	// 检查值的类型
-//	if value.Kind() == reflect.String {
-//		fmt.Println("Value is string:", value.String())
-//	} else if value.Kind() == reflect.Int || value.Kind() == reflect.Float64 || value.Kind() == reflect.Bool {
-//		// 可以添加更多类型的判断
-//		fmt.Println("Value is not a string, but it's a:", value.Kind())
-//	}
-//}
-//}

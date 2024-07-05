@@ -13,7 +13,7 @@ func DownLoadLayer(imageName string, ublob string, mirror string, proxy string, 
 		return
 	}
 	authToken := GetAuthToken(imageName, "application/vnd.docker.distribution.manifest.v2+json", mirror, proxy)
-	fmt.Println("auth : " + authToken.Token)
+	//fmt.Println("auth : " + authToken.Token)
 
 	url := MakeUrl("registry.hub.docker.com", fmt.Sprintf("v2/%s/blobs/%s", imageName, ublob), mirror)
 	headers := map[string]string{
