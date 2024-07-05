@@ -50,6 +50,11 @@ func LoadArgs() Args {
 
 	flag.Parse()
 
+	if imageName == "" {
+		flag.PrintDefaults()
+		os.Exit(1)
+	}
+
 	// cache 判断首字母是否为 /
 	if cache[0] != '/' && !strings.ContainsRune(cache, ':') {
 		dir, _ := os.Getwd()
