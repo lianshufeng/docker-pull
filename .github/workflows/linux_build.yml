@@ -26,6 +26,16 @@ jobs:
       run: |
         VERSION=$(cat VERSION)
         echo ::set-output name=version::$VERSION
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ steps.prepare_release.outputs.version }}
+        release_name: Release ${{ steps.prepare_release.outputs.version }}
+
     - name: Upload Artifact
       uses: actions/upload-release-asset@v1
       env:
