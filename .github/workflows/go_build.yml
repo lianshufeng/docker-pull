@@ -32,17 +32,18 @@ jobs:
         with:
           tag_name: v${{ steps.prepare_release.outputs.version }}
           release_name: Release ${{ steps.prepare_release.outputs.version }}
-      - name: Set output
-        id: vars
-        run: echo "::set-output name=upload_url::${{ steps.create_release.outputs.upload_url }}"
+      - name: Save release ID
+        run: echo "${{ steps.create_release.outputs.id }}" > release_id.txt
+      - name: Upload release ID
+        uses: actions/upload-artifact@v2
+        with:
+          name: release_id
+          path: release_id.txt
     
   build_linux:
     runs-on: ubuntu-latest
     permissions: write-all
     steps:
-    - name: print url
-      id: print_upload_url
-      run: echo ${{ needs.release.outputs.upload_url }}
     - name: Checkout code
       uses: actions/checkout@v2
     - name: Setup Go
@@ -56,12 +57,21 @@ jobs:
       run: |
         VERSION=$(cat VERSION)
         echo ::set-output name=version::$VERSION
+    
+    - name: Download release ID
+      uses: actions/download-artifact@v2
+      with:
+        name: release_id
+    - name: Read release ID
+      id: release_id
+      run: echo "::set-output name=id::$(cat release_id/release_id.txt)"
+      
     - name: Upload Artifact
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ needs.release.outputs.vars.upload_url }}
+        upload_url: https://api.github.com/repos/${{ github.repository }}/releases/${{ steps.release_id.outputs.id }}
         asset_path: ./docker-pull
         asset_name: docker-pull
         asset_content_type: application/octet-stream
