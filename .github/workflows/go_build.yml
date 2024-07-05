@@ -12,8 +12,6 @@ jobs:
   release:
     runs-on: ubuntu-latest
     permissions: write-all
-    outputs:
-      upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -34,12 +32,9 @@ jobs:
         with:
           tag_name: v${{ steps.prepare_release.outputs.version }}
           release_name: Release ${{ steps.prepare_release.outputs.version }}
-      - name: Set Upload Url
-        id: set_upload_url
-        run: UPLOAD_URL=${{ steps.create_release.outputs.upload_url }}
-      - name: print url
-        id: print_upload_url
-        run: echo ${{ steps.create_release.outputs.upload_url }}
+      - name: Set output
+        id: vars
+        run: echo "::set-output name=upload_url::${{ steps.create_release.outputs.upload_url }}"
     
   build_linux:
     runs-on: ubuntu-latest
@@ -66,7 +61,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ needs.release.outputs.upload_url }}
+        upload_url: ${{ needs.release.outputs.vars.upload_url }}
         asset_path: ./docker-pull
         asset_name: docker-pull
         asset_content_type: application/octet-stream
@@ -95,7 +90,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url:  ${{ needs.release.outputs.upload_url }}
+        upload_url: ${{ needs.release.outputs.vars.upload_url }}
         asset_path: .\docker-pull.exe
         asset_name: docker-pull.exe
         asset_content_type: application/octet-stream
