@@ -63,64 +63,64 @@ jobs:
         asset_content_type: application/octet-stream
 
 
-  docker_build_armv7:
-    runs-on: ubuntu-latest
-    permissions: write-all
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-    - name: Docker Build
-      run: docker run --platform=linux/arm/v7 --rm -v "$(pwd)/core:/opt/core" -w /opt/core golang:1.22-alpine go build ./
-    - name: Prepare Release
-      id: prepare_release
-      run: |
-        VERSION=$(cat VERSION)
-        echo ::set-output name=version::$VERSION
-    - name: Get latest release info
-      id: get_release_info
-      run: |
-        LATEST_RELEASE=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/${{ github.repository }}/releases/latest)
-        echo "::set-output name=upload_url::$(echo $LATEST_RELEASE | jq -r '.upload_url')"
-        echo "::set-output name=tag_name::$(echo $LATEST_RELEASE | jq -r '.tag_name')"
-    - name: Upload Artifact
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.get_release_info.outputs.upload_url }}"
-        asset_path: ./core/docker-pull
-        asset_name: docker-pull-armv7
-        asset_content_type: application/octet-stream
+  # docker_build_armv7:
+  #   runs-on: ubuntu-latest
+  #   permissions: write-all
+  #   steps:
+  #   - name: Checkout code
+  #     uses: actions/checkout@v2
+  #   - name: Docker Build
+  #     run: docker run --platform=linux/arm/v7 --rm -v "$(pwd)/core:/opt/core" -w /opt/core golang:1.22-alpine go build ./
+  #   - name: Prepare Release
+  #     id: prepare_release
+  #     run: |
+  #       VERSION=$(cat VERSION)
+  #       echo ::set-output name=version::$VERSION
+  #   - name: Get latest release info
+  #     id: get_release_info
+  #     run: |
+  #       LATEST_RELEASE=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/${{ github.repository }}/releases/latest)
+  #       echo "::set-output name=upload_url::$(echo $LATEST_RELEASE | jq -r '.upload_url')"
+  #       echo "::set-output name=tag_name::$(echo $LATEST_RELEASE | jq -r '.tag_name')"
+  #   - name: Upload Artifact
+  #     uses: actions/upload-release-asset@v1
+  #     env:
+  #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #     with:
+  #       upload_url: ${{ steps.get_release_info.outputs.upload_url }}"
+  #       asset_path: ./core/docker-pull
+  #       asset_name: docker-pull-armv7
+  #       asset_content_type: application/octet-stream
 
 
-  docker_build_arm64:
-    runs-on: ubuntu-latest
-    permissions: write-all
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-    - name: Docker Build
-      run: docker run --platform=linux/arm64 --rm -v "$(pwd)/core:/opt/core" -w /opt/core golang:1.22-alpine go build ./
-    - name: Prepare Release
-      id: prepare_release
-      run: |
-        VERSION=$(cat VERSION)
-        echo ::set-output name=version::$VERSION
-    - name: Get latest release info
-      id: get_release_info
-      run: |
-        LATEST_RELEASE=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/${{ github.repository }}/releases/latest)
-        echo "::set-output name=upload_url::$(echo $LATEST_RELEASE | jq -r '.upload_url')"
-        echo "::set-output name=tag_name::$(echo $LATEST_RELEASE | jq -r '.tag_name')"
-    - name: Upload Artifact
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.get_release_info.outputs.upload_url }}"
-        asset_path: ./core/docker-pull
-        asset_name: docker-pull-arm64
-        asset_content_type: application/octet-stream
+  # docker_build_arm64:
+  #   runs-on: ubuntu-latest
+  #   permissions: write-all
+  #   steps:
+  #   - name: Checkout code
+  #     uses: actions/checkout@v2
+  #   - name: Docker Build
+  #     run: docker run --platform=linux/arm64 --rm -v "$(pwd)/core:/opt/core" -w /opt/core golang:1.22-alpine go build ./
+  #   - name: Prepare Release
+  #     id: prepare_release
+  #     run: |
+  #       VERSION=$(cat VERSION)
+  #       echo ::set-output name=version::$VERSION
+  #   - name: Get latest release info
+  #     id: get_release_info
+  #     run: |
+  #       LATEST_RELEASE=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/${{ github.repository }}/releases/latest)
+  #       echo "::set-output name=upload_url::$(echo $LATEST_RELEASE | jq -r '.upload_url')"
+  #       echo "::set-output name=tag_name::$(echo $LATEST_RELEASE | jq -r '.tag_name')"
+  #   - name: Upload Artifact
+  #     uses: actions/upload-release-asset@v1
+  #     env:
+  #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #     with:
+  #       upload_url: ${{ steps.get_release_info.outputs.upload_url }}"
+  #       asset_path: ./core/docker-pull
+  #       asset_name: docker-pull-arm64
+  #       asset_content_type: application/octet-stream
 
   build_windows:
     runs-on: windows-latest
