@@ -17,7 +17,6 @@ const (
 	NormalRespCode = "206 Partial Content"
 	// 断点续传下载，偏移量值超文件最大值长度错误响应码
 	ErrRespCode = "416 Requested Range Not Satisfiable"
-	BuffByte    = 1024*1024*10 - 1
 )
 
 func MakeProcessFileName(DestFile string) string {
@@ -32,7 +31,7 @@ func CompleteFile(DestFile string) bool {
 	return file.IsExist(DestFile) && !file.IsExist(process_file_name)
 }
 
-func DownLoad(url string, headers map[string]string, DestFile string, proxy string) error {
+func DownLoad(url string, headers map[string]string, DestFile string, proxy string, BuffByte int64) error {
 	// 进度文件
 	process_file_name := MakeProcessFileName(DestFile)
 

@@ -10,12 +10,14 @@ import (
 type Args struct {
 	ImageName        string
 	Tag              string
+	Digest           string
 	Mirror           string
 	Proxy            string
 	Architecture     string
 	Os               string
 	Cache            string
 	ThreadCount      int
+	BuffByte         int64
 	IsLoad           bool
 	DockerApiVersion string
 }
@@ -39,6 +41,9 @@ func LoadArgs() Args {
 
 	var ThreadCount int
 	flag.IntVar(&ThreadCount, "thread", 6, "thead number")
+
+	var BuffByte int64
+	flag.Int64Var(&BuffByte, "buffByte", 1024*1024*10-1, "download buffByte")
 
 	var IsLoad bool
 	flag.BoolVar(&IsLoad, "load", true, "load image")
@@ -65,13 +70,17 @@ func LoadArgs() Args {
 
 	//提取tag
 	var tag string
-	at := strings.Index(imageName, ":")
-	if at > -1 {
+	var Digest string
+	if strings.Contains(imageName, "@") {
+		Digest = imageName[strings.Index(imageName, "@")+1:]
+		tag = "latest"
+		imageName = imageName[:strings.Index(imageName, "@")]
+	} else if strings.Contains(imageName, ":") {
+		at := strings.Index(imageName, ":")
 		tag = imageName[at+1:]
 		imageName = imageName[0:at]
 	} else {
 		tag = "latest"
-		imageName = imageName
 	}
 
 	imageNames := strings.Split(imageName, "/")
@@ -88,12 +97,14 @@ func LoadArgs() Args {
 	return Args{
 		ImageName:        imageName,
 		Tag:              tag,
+		Digest:           Digest,
 		Mirror:           mirror,
 		Proxy:            proxy,
 		Architecture:     architecture,
 		Os:               platform_os,
 		Cache:            cache,
 		ThreadCount:      ThreadCount,
+		BuffByte:         BuffByte,
 		IsLoad:           IsLoad,
 		DockerApiVersion: DockerApiVersion,
 	}

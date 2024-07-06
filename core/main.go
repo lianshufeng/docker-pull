@@ -48,16 +48,16 @@ func MakeLayerId(parentID string, ublob string) string {
 }
 
 func DownLoadLayer(task DownLoadLayerTask) {
-	docker_tools.DownLoadLayer(task.ImageName, task.Layer.Digest, task.Args.Mirror, task.Args.Proxy, task.Output)
+	docker_tools.DownLoadLayer(task.ImageName, task.Layer.Digest, task.Args.Mirror, task.Args.Proxy, task.Args.BuffByte, task.Output)
 }
 
-func PullImage(imageName string, tag string, args arg_tools.Args) {
+func PullImage(imageName string, digest string, tag string, args arg_tools.Args) {
 
 	//获取token
 	authToken := docker_tools.GetAuthToken(imageName, DefaultAccept, args.Mirror, args.Proxy)
 	//fmt.Println("AuthToken:", authToken.Token)
 
-	manifest := docker_tools.GetManifests(imageName, tag, DefaultAccept, args.Os, args.Architecture, authToken.Token, args.Mirror, args.Proxy)
+	manifest := docker_tools.GetManifests(imageName, digest, tag, args.Os, args.Architecture, authToken.Token, args.Mirror, args.Proxy)
 	//fmt.Println("manifests:", manifest)
 
 	//创建缓存目录
@@ -191,6 +191,6 @@ func main() {
 	}
 
 	//开始下载镜像
-	PullImage(args.ImageName, args.Tag, args)
+	PullImage(args.ImageName, args.Digest, args.Tag, args)
 
 }
