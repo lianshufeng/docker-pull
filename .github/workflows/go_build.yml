@@ -59,7 +59,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.get_release_info.outputs.upload_url }}"
-        asset_path: ./docker-pull
+        asset_path: ./core/docker-pull
         asset_name: docker-pull
         asset_content_type: application/octet-stream
 
