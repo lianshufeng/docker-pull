@@ -57,7 +57,7 @@ func PullImage(imageName string, digest string, tag string, args arg_tools.Args)
 	authToken := docker_tools.GetAuthToken(imageName, DefaultAccept, args.Mirror, args.Proxy)
 	//fmt.Println("AuthToken:", authToken.Token)
 
-	manifest := docker_tools.GetManifests(imageName, digest, tag, args.Os, args.Architecture, authToken.Token, args.Mirror, args.Proxy)
+	manifest := docker_tools.GetManifests(imageName, digest, tag, args.Os, args.Architecture, args.Variant, authToken.Token, args.Mirror, args.Proxy)
 	//fmt.Println("manifests:", manifest)
 
 	//创建缓存目录

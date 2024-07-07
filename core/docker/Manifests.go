@@ -14,6 +14,7 @@ type Manifest_v1 struct {
 		Platform    struct {
 			Architecture string `json:"architecture"`
 			Os           string `json:"os"`
+			Variant      string `json:"variant"`
 		} `json:"platform"`
 		Size int `json:"size"`
 	} `json:"manifests"`
@@ -77,7 +78,7 @@ var ManifestsAcceptList = []string{
 	"application/vnd.docker.distribution.manifest.v2+json", "application/vnd.oci.image.manifest.v1+json",
 }
 
-func GetManifests(imageName string, digest string, tag string, platform_os string, architecture string, auth_token string, mirror string, proxy string) Manifest {
+func GetManifests(imageName string, digest string, tag string, platform_os string, platform_architecture string, platform_variant string, auth_token string, mirror string, proxy string) Manifest {
 	//application/vnd.docker.distribution.manifest.v2+json
 	//application/vnd.oci.image.manifest.v1+json
 
@@ -91,6 +92,7 @@ func GetManifests(imageName string, digest string, tag string, platform_os strin
 	var body []byte
 	var code int
 
+	// 优先兼容v2 协议
 	for i := range ManifestsAcceptList {
 		Accept := ManifestsAcceptList[i]
 		header := map[string]string{
@@ -101,7 +103,6 @@ func GetManifests(imageName string, digest string, tag string, platform_os strin
 		if code == 200 {
 			break
 		}
-		//尝试兼容v1
 	}
 	if code != 200 {
 		fmt.Println("not found :", imageName, ", code :", code)
@@ -130,14 +131,15 @@ func GetManifests(imageName string, digest string, tag string, platform_os strin
 		json.Unmarshal(body, &manifest_v1)
 		for i := range manifest_v1.Manifests {
 			platform := manifest_v1.Manifests[i].Platform
-			if platform.Os == platform_os && platform.Architecture == architecture {
+			//匹配平台和cpu架构
+			if platform.Os == platform_os && platform.Architecture == platform_architecture && platform.Variant == platform_variant {
 				_accept := manifest_v1.Manifests[i].MediaType
 				_auth_token := GetAuthToken(imageName, _accept, mirror, proxy).Token
-				return GetManifests(imageName, manifest_v1.Manifests[i].Digest, "", platform_os, architecture, _auth_token, mirror, proxy)
+				return GetManifests(imageName, manifest_v1.Manifests[i].Digest, "", platform_os, platform_architecture, platform_variant, _auth_token, mirror, proxy)
 			}
 		}
 	}
-	err := fmt.Errorf("not found : ", imageName+" : "+digest+" "+tag+"@"+platform_os+"/"+architecture)
+	err := fmt.Errorf("not found : ", imageName+" : "+digest+" "+tag+"@"+platform_os+"/"+platform_architecture)
 	fmt.Fprintf(os.Stderr, "错误: %v\n", err)
 	os.Exit(1)
 	return Manifest{}

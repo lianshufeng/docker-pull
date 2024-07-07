@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"runtime"
 	"strings"
 )
 
@@ -14,6 +15,7 @@ type Args struct {
 	Mirror           string
 	Proxy            string
 	Architecture     string
+	Variant          string
 	Os               string
 	Cache            string
 	ThreadCount      int
@@ -30,9 +32,15 @@ func LoadArgs() Args {
 	var proxy string
 	flag.StringVar(&proxy, "proxy", "", "proxy server , http://127.0.0.1:1080")
 
-	var architecture string
-	flag.StringVar(&architecture, "architecture", "amd64", "platform.architecture")
+	//架构
+	var platform_architecture string
+	flag.StringVar(&platform_architecture, "architecture", runtime.GOARCH, "platform.architecture")
 
+	//版本
+	var platform_variant string
+	flag.StringVar(&platform_variant, "variant", "", "platform.variant")
+
+	//系统功能
 	var platform_os string
 	flag.StringVar(&platform_os, "os", "linux", "platform.os")
 
@@ -100,7 +108,8 @@ func LoadArgs() Args {
 		Digest:           Digest,
 		Mirror:           mirror,
 		Proxy:            proxy,
-		Architecture:     architecture,
+		Architecture:     platform_architecture,
+		Variant:          platform_variant,
 		Os:               platform_os,
 		Cache:            cache,
 		ThreadCount:      ThreadCount,
