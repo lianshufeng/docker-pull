@@ -41,7 +41,6 @@ eg : docker-pull -proxy http://127.0.0.1:1080 -thread 5 nginx
 ```bash
 docker_pull nginx
 docker_pull mysql/mysql-server:8.0
-docker_pull mcr.microsoft.com/mssql-tools
 docker_pull nginx@sha256:d987469c32fecb3f839a4606671eb2bb308039a3a6b2d086341769da3931b9b6
 ```
 - with proxy
