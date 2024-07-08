@@ -131,12 +131,29 @@ func GetManifests(imageName string, digest string, tag string, platform_os strin
 		json.Unmarshal(body, &manifest_v1)
 		for i := range manifest_v1.Manifests {
 			platform := manifest_v1.Manifests[i].Platform
-			//匹配平台和cpu架构
-			if platform.Os == platform_os && platform.Architecture == platform_architecture && platform.Variant == platform_variant {
+
+			var IsMatch = false
+
+			if (platform_os != "" && platform_architecture != "" && platform_variant != "") && (platform.Os == platform_os && platform.Architecture == platform_architecture && platform.Variant == platform_variant) {
+				IsMatch = true
+			} else if (platform_os != "" && platform_architecture != "") && (platform.Os == platform_os && platform.Architecture == platform_architecture) {
+				IsMatch = true
+			} else if (platform_os != "") && (platform.Os == platform_os) {
+				IsMatch = true
+			}
+
+			if IsMatch == true {
 				_accept := manifest_v1.Manifests[i].MediaType
 				_auth_token := GetAuthToken(imageName, _accept, mirror, proxy).Token
 				return GetManifests(imageName, manifest_v1.Manifests[i].Digest, "", platform_os, platform_architecture, platform_variant, _auth_token, mirror, proxy)
 			}
+
+			//匹配平台和cpu架构
+			//if platform.Os == platform_os && platform.Architecture == platform_architecture && platform.Variant == platform_variant {
+			//	_accept := manifest_v1.Manifests[i].MediaType
+			//	_auth_token := GetAuthToken(imageName, _accept, mirror, proxy).Token
+			//	return GetManifests(imageName, manifest_v1.Manifests[i].Digest, "", platform_os, platform_architecture, platform_variant, _auth_token, mirror, proxy)
+			//}
 		}
 	}
 	err := fmt.Errorf("not found : ", imageName+" : "+digest+" "+tag+"@"+platform_os+"/"+platform_architecture)
