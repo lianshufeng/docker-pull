@@ -93,13 +93,27 @@ func LoadArgs() Args {
 		tag = "latest"
 	}
 
+	//IsContainsMirror := false
+	////优先判断特殊的镜像
+	//if len(imageNames) >= 2 {
+	//	if strings.Contains(imageNames[0], ".") {
+	//		IsContainsMirror = true
+	//		mirror = imageNames[0]
+	//		imageName = strings.Join(imageNames[1:len(imageNames)], "/")
+	//		//删除数组第一个成员
+	//		imageNames = imageNames[1:len(imageNames)]
+	//
+	//	}
+	//}
+
+	//if len(imageNames) == 1 && !IsContainsMirror {
 	imageNames := strings.Split(imageName, "/")
 	if len(imageNames) == 1 {
 		imageName = "library/" + imageName
 	} else if len(imageNames) == 2 {
 		//nothing
 	} else if len(imageNames) > 2 {
-		//取出除了最后2级以外的所有目录
+		//取出除了最后2级以外的所有目录,兼容自定义域名
 		imageName = strings.Join(imageNames[len(imageNames)-2:len(imageNames)], "/")
 		mirror = strings.Join(imageNames[0:len(imageNames)-2], "/")
 	}
