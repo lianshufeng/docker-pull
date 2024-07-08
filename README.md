@@ -61,7 +61,7 @@ docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v ${PWD}:/work lia
 
 - arm
 ```bash
-docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v ${PWD}:/work lianshufeng/docker-pull -architecture arm nginx
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v ${PWD}:/work lianshufeng/docker-pull:arm -architecture arm nginx
 ```
 
 
