@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 	"runtime"
 	"strings"
 )
@@ -75,6 +76,7 @@ func LoadArgs() Args {
 		dir, _ := os.Getwd()
 		cache = dir + "/" + cache
 	}
+	cache = filepath.Clean(cache)
 
 	//提取tag
 	var tag string

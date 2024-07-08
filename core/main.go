@@ -180,6 +180,9 @@ func PullImage(imageName string, digest string, tag string, args arg_tools.Args)
 func main() {
 	//读取命令行参数
 	args := arg_tools.LoadArgs()
+	args_json, _ := json.Marshal(args)
+	fmt.Println("task : ", string(args_json))
+
 	//环境变量
 	InitEnv(map[string]string{
 		"DOCKER_API_VERSION": args.DockerApiVersion,
