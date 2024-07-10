@@ -1,5 +1,5 @@
 FROM golang:1.22-alpine as builder
-COPY ./core /core
+COPY ./ /core
 WORKDIR /core
 RUN go build -o /opt
 

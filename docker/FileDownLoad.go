@@ -41,6 +41,11 @@ func DownLoad(url string, headers map[string]string, DestFile string, proxy stri
 		return nil
 	}
 
+	//如果文件不存在，进度文件存在则删除进度文件重新下载
+	if !file.IsExist(DestFile) && file.IsExist(process_file_name) {
+		os.Remove(process_file_name)
+	}
+
 	IsDownLoadDone := error(nil)
 
 	//创建进度文件

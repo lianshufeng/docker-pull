@@ -3,13 +3,23 @@ package file
 import (
 	"archive/tar"
 	"compress/gzip"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 	"strings"
 )
 
-func UnGzip(SourceFile string, DestFile string) {
+func UnGzip(SourceFile string, DestFile string) (bool, error) {
+	Success := true
+	//捕获异常
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Print("UnTar Error :", DestFile)
+			Success = false
+		}
+	}()
+
 	// 打开一个 Gzip 压缩文件
 	gzipFile, err := os.Open(SourceFile)
 	if err != nil {
@@ -31,7 +41,7 @@ func UnGzip(SourceFile string, DestFile string) {
 	if err != nil {
 		panic(err)
 	}
-
+	return Success, err
 }
 
 func TarDir(dirPath string, writer *tar.Writer) error {

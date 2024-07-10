@@ -51,14 +51,38 @@ func DownLoadLayer(task DownLoadLayerTask) {
 	docker_tools.DownLoadLayer(task.ImageName, task.Layer.Digest, task.Args.Mirror, task.Args.Proxy, task.Args.BuffByte, task.Output)
 }
 
+/**
+ * 下载并解压
+ */
+func DownAndUnGzip(task DownLoadLayerTask, cacheDirectory string, blobsDirectory string) {
+
+	//开始下载层
+	DownLoadLayer(task)
+
+	//层的目录
+	layerFile := cacheDirectory + "/" + task.Fake_layerid + ".gzip.tar"
+	fmt.Println("UnGzip : ", task.Fake_layerid)
+	//解压转换
+	UnSuccess, _ := file.UnGzip(layerFile, blobsDirectory+"/"+task.Fake_layerid+".tar")
+	//解压失败，重新下载
+	if UnSuccess == false {
+		fmt.Println("Re DownLoadLayer : ", task.Fake_layerid)
+		if file.IsExist(task.Output) {
+			fmt.Println("Delete : ", task.Output)
+			os.Remove(task.Output)
+		}
+		DownAndUnGzip(task, cacheDirectory, blobsDirectory)
+	}
+
+}
+
 func PullImage(imageName string, digest string, tag string, args arg_tools.Args) {
 
 	//获取token
 	authToken := docker_tools.GetAuthToken(imageName, DefaultAccept, args.Mirror, args.Proxy)
-	//fmt.Println("AuthToken:", authToken.Token)
 
+	//获取层的清单
 	manifest := docker_tools.GetManifests(imageName, digest, tag, args.Os, args.Architecture, args.Variant, authToken.Token, args.Mirror, args.Proxy)
-	//fmt.Println("manifests:", manifest)
 
 	//创建缓存目录
 	cacheName := strings.ReplaceAll(imageName, "/", "_") + "@" + tag
@@ -71,11 +95,26 @@ func PullImage(imageName string, digest string, tag string, args arg_tools.Args)
 	config_ret := docker_tools.GetConfigManifests(imageName, manifest.Config.Digest, authToken.Token, args.Mirror, args.Proxy)
 	os.WriteFile(config_json_file, config_ret, os.ModePerm)
 
+	//创建工程目录
+	projectDirectory := cacheDirectory + "/_tmp_" + strconv.FormatInt(time.Now().Unix(), 10)
+	blobsDirectory := projectDirectory + "/blobs"
+	os.MkdirAll(blobsDirectory, os.ModeDir)
+
+	// 创建DockerTarManifest
+	dockerTarManifest := docker_tools.DockerTarManifest{
+		{
+			Config:   config_json_name,
+			RepoTags: []string{imageName + ":" + tag},
+			Layers:   []string{},
+		},
+	}
+
 	//线程池
 	pool, _ := ants.NewPool(args.ThreadCount)
 	defer pool.Release()
 	var wg sync.WaitGroup
 	var parentID string
+	var LastLayerId string
 	for i := range manifest.Layers {
 		//取出层
 		layer := manifest.Layers[i]
@@ -95,44 +134,34 @@ func PullImage(imageName string, digest string, tag string, args arg_tools.Args)
 		wg.Add(1)
 		_ = pool.Submit(func() {
 			defer wg.Done()
+			//记录最后一层的id
+			LastLayerId = fake_layerid
 			fmt.Println("download layer:", layer.Digest)
-			DownLoadLayer(task)
+			DownAndUnGzip(task, cacheDirectory, blobsDirectory)
+			//添加层
+			dockerTarManifest[0].Layers = append(dockerTarManifest[0].Layers, "blobs/"+task.Fake_layerid+".tar")
 		})
 	}
 	// 等待所有协程执行完成
 	wg.Wait()
 
-	//创建工程目录
-	projectDirectory := cacheDirectory + "/_tmp_" + strconv.FormatInt(time.Now().Unix(), 10)
-	blobsDirectory := projectDirectory + "/blobs"
-	os.MkdirAll(blobsDirectory, os.ModeDir)
-
-	// 创建DockerTarManifest
-	dockerTarManifest := docker_tools.DockerTarManifest{
-		{
-			Config:   config_json_name,
-			RepoTags: []string{imageName + ":" + tag},
-			Layers:   []string{},
-		},
-	}
-
 	// 循环解压到tar
-	var LastLayerId string
-	for i := range manifest.Layers {
-		//取出层
-		layer := manifest.Layers[i]
-		fake_layerid := MakeLayerId(parentID, layer.Digest)
-		//记录最后一层的id
-		LastLayerId = fake_layerid
-		//层的目录
-		layerFile := cacheDirectory + "/" + fake_layerid + ".gzip.tar"
-		fmt.Println("UnGzip : ", fake_layerid)
-		//解压转换
-		file.UnGzip(layerFile, blobsDirectory+"/"+fake_layerid+".tar")
-
-		//添加层
-		dockerTarManifest[0].Layers = append(dockerTarManifest[0].Layers, "blobs/"+fake_layerid+".tar")
-	}
+	//var LastLayerId string
+	//for i := range manifest.Layers {
+	//	//取出层
+	//	layer := manifest.Layers[i]
+	//	fake_layerid := MakeLayerId(parentID, layer.Digest)
+	//	//记录最后一层的id
+	//	LastLayerId = fake_layerid
+	//	//层的目录
+	//	layerFile := cacheDirectory + "/" + fake_layerid + ".gzip.tar"
+	//	fmt.Println("UnGzip : ", fake_layerid)
+	//	//解压转换
+	//	file.UnGzip(layerFile, blobsDirectory+"/"+fake_layerid+".tar")
+	//
+	//	//添加层
+	//	dockerTarManifest[0].Layers = append(dockerTarManifest[0].Layers, "blobs/"+fake_layerid+".tar")
+	//}
 
 	//拷贝config
 	file.Copy(config_json_file, projectDirectory+"/"+config_json_name)
