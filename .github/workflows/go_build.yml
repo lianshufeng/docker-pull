@@ -58,7 +58,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.get_release_info.outputs.upload_url }}"
-        asset_path: ./core/docker-pull
+        asset_path: ./docker-pull
         asset_name: docker-pull
         asset_content_type: application/octet-stream
 
@@ -134,7 +134,7 @@ jobs:
         go-version: '^1.21'
     - name: Build
       run: |
-        go build -o ..\docker-pull.exe .
+        go build -o .\docker-pull.exe .
     - name: Prepare Release
       id: prepare_release
       run: |
