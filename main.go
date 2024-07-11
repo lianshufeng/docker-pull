@@ -86,7 +86,7 @@ func PullImage(imageName string, digest string, tag string, args arg_tools.Args)
 
 	//创建缓存目录
 	cacheName := strings.ReplaceAll(imageName, "/", "_") + "@" + tag
-	cacheDirectory := args.Cache + "/" + cacheName
+	cacheDirectory := filepath.Clean(args.Cache + "/" + cacheName)
 	config_json_name := manifest.Config.Digest[7:] + ".json"
 	config_json_file := cacheDirectory + "/" + config_json_name
 	os.MkdirAll(cacheDirectory, os.ModeDir)
@@ -182,7 +182,20 @@ func PullImage(imageName string, digest string, tag string, args arg_tools.Args)
 		docker_tools.ImageLoad(outputFilePath)
 	}
 
-	fmt.Println("image save :", outputFilePath)
+	//清除缓存
+	if args.CleanCache {
+		fmt.Println("cache delete :", cacheDirectory)
+		os.RemoveAll(cacheDirectory)
+	}
+
+	// 清除镜像
+	if args.CleanImage {
+		fmt.Println("image delete :", outputFilePath)
+		outputFile.Close()
+		os.Remove(outputFilePath)
+	} else {
+		fmt.Println("image save :", outputFilePath)
+	}
 
 }
 

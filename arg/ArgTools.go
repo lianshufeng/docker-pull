@@ -19,6 +19,8 @@ type Args struct {
 	Variant          string
 	Os               string
 	Cache            string
+	CleanCache       bool
+	CleanImage       bool
 	ThreadCount      int
 	BuffByte         int64
 	IsLoad           bool
@@ -57,6 +59,12 @@ func LoadArgs() Args {
 	var IsLoad bool
 	flag.BoolVar(&IsLoad, "load", true, "load image")
 
+	var cleanCache bool
+	flag.BoolVar(&cleanCache, "cleanCache", false, "clean cache")
+
+	var cleanImage bool
+	flag.BoolVar(&cleanImage, "cleanImage", false, "clean image")
+
 	var DockerApiVersion string
 	flag.StringVar(&DockerApiVersion, "docker_api_version", "1.30", "DOCKER_API_VERSION")
 
@@ -93,19 +101,6 @@ func LoadArgs() Args {
 		tag = "latest"
 	}
 
-	//IsContainsMirror := false
-	////优先判断特殊的镜像
-	//if len(imageNames) >= 2 {
-	//	if strings.Contains(imageNames[0], ".") {
-	//		IsContainsMirror = true
-	//		mirror = imageNames[0]
-	//		imageName = strings.Join(imageNames[1:len(imageNames)], "/")
-	//		//删除数组第一个成员
-	//		imageNames = imageNames[1:len(imageNames)]
-	//
-	//	}
-	//}
-
 	//if len(imageNames) == 1 && !IsContainsMirror {
 	imageNames := strings.Split(imageName, "/")
 	if len(imageNames) == 1 {
@@ -128,6 +123,8 @@ func LoadArgs() Args {
 		Variant:          platform_variant,
 		Os:               platform_os,
 		Cache:            cache,
+		CleanCache:       cleanCache,
+		CleanImage:       cleanImage,
 		ThreadCount:      ThreadCount,
 		BuffByte:         BuffByte,
 		IsLoad:           IsLoad,
