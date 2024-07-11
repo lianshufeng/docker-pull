@@ -72,6 +72,5 @@ git clone https://github.com/lianshufeng/docker-pull.git
 ```
 2. Build:
 ```bash
-cd core/
 go build ./
 ```
