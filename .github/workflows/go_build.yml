@@ -40,7 +40,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
     - name: Docker Build
-      run: docker run --rm -v "$(pwd)/core:/opt/core" -w /opt/core golang:1.22-alpine go build ./
+      run: docker run --rm -v "$(pwd):/opt/core" -w /opt/core golang:1.22-alpine go build ./
     - name: Prepare Release
       id: prepare_release
       run: |
@@ -134,7 +134,6 @@ jobs:
         go-version: '^1.21'
     - name: Build
       run: |
-        cd .\core
         go build -o ..\docker-pull.exe .
     - name: Prepare Release
       id: prepare_release
