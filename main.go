@@ -43,7 +43,7 @@ func InitEnv(ConfigENV map[string]string) {
 //	return hex.EncodeToString(hasher.Sum(nil))
 //}
 
-func MakeLayerId(parentID string, ublob string) string {
+func MakeLayerId(ublob string) string {
 	return ublob[7:]
 }
 
@@ -113,12 +113,11 @@ func PullImage(imageName string, digest string, tag string, args arg_tools.Args)
 	pool, _ := ants.NewPool(args.ThreadCount)
 	defer pool.Release()
 	var wg sync.WaitGroup
-	var parentID string
-	var LastLayerId string
+	//var parentID string
 	for i := range manifest.Layers {
 		//取出层
 		layer := manifest.Layers[i]
-		fake_layerid := MakeLayerId(parentID, layer.Digest)
+		fake_layerid := MakeLayerId(layer.Digest)
 		//层的目录
 		layerFile := cacheDirectory + "/" + fake_layerid + ".gzip.tar"
 		//下载任务
@@ -135,15 +134,19 @@ func PullImage(imageName string, digest string, tag string, args arg_tools.Args)
 		_ = pool.Submit(func() {
 			defer wg.Done()
 			//记录最后一层的id
-			LastLayerId = fake_layerid
+			//LastLayerId = fake_layerid
 			fmt.Println("download layer:", layer.Digest)
 			DownAndUnGzip(task, cacheDirectory, blobsDirectory)
-			//添加层
-			dockerTarManifest[0].Layers = append(dockerTarManifest[0].Layers, "blobs/"+task.Fake_layerid+".tar")
 		})
 	}
 	// 等待所有协程执行完成
 	wg.Wait()
+
+	//添加层
+	for i := range manifest.Layers {
+		layer := manifest.Layers[i]
+		dockerTarManifest[0].Layers = append(dockerTarManifest[0].Layers, "blobs/"+MakeLayerId(layer.Digest)+".tar")
+	}
 
 	// 循环解压到tar
 	//var LastLayerId string
@@ -173,7 +176,7 @@ func PullImage(imageName string, digest string, tag string, args arg_tools.Args)
 	//构建 repositories
 	repositories := map[string]map[string]string{
 		imageName: {
-			tag: LastLayerId,
+			tag: manifest.Layers[len(manifest.Layers)-1].Digest,
 		},
 	}
 	repositoriesJson, _ := json.Marshal(repositories)
