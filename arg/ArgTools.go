@@ -57,7 +57,7 @@ func LoadArgs() Args {
 	flag.Int64Var(&BuffByte, "buffByte", 1024*1024*10-1, "download buffByte")
 
 	var IsLoad bool
-	flag.BoolVar(&IsLoad, "load", true, "load image")
+	flag.BoolVar(&IsLoad, "load", true, "check and load the local image")
 
 	var cleanCache bool
 	flag.BoolVar(&cleanCache, "cleanCache", false, "clean cache")

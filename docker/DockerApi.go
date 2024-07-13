@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
@@ -170,4 +171,36 @@ func ImageLoad(FileName string) bool {
 	}
 	return true
 
+}
+
+func GetImage(imageId string) image.Summary {
+	ctx := context.Background()
+	cli, err := client.NewClientWithOpts(client.FromEnv)
+	if err != nil {
+		fmt.Println("error : ", err)
+		return image.Summary{}
+	}
+	options := image.ListOptions{}
+	options.All = true
+	options.Filters = filters.NewArgs()
+	ret, _ := cli.ImageList(ctx, options)
+	for i := range ret {
+		if ret[i].ID == imageId {
+			return ret[i]
+		}
+	}
+	return image.Summary{}
+}
+
+func ImageTag(imageId string, imageName string, tag string) error {
+	ctx := context.Background()
+	cli, err := client.NewClientWithOpts(client.FromEnv)
+	if err != nil {
+		fmt.Println("error : ", err)
+		return err
+	}
+	options := image.ListOptions{}
+	options.All = true
+	options.Filters = filters.NewArgs()
+	return cli.ImageTag(ctx, imageId, imageName+":"+tag)
 }

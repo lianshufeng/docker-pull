@@ -84,6 +84,18 @@ func PullImage(imageName string, digest string, tag string, args arg_tools.Args)
 	//获取层的清单
 	manifest := docker_tools.GetManifests(imageName, digest, tag, args.Os, args.Architecture, args.Variant, authToken.Token, args.Mirror, args.Proxy)
 
+	//查询本地镜像
+	if args.IsLoad {
+		localImage := docker_tools.GetImage(manifest.Config.Digest)
+		if localImage.ID != "" {
+			err := docker_tools.ImageTag(localImage.ID, imageName, tag)
+			if err == nil {
+				fmt.Println(fmt.Sprintf("%s -> %s:%s", localImage.ID, imageName, tag))
+				return
+			}
+		}
+	}
+
 	//创建缓存目录
 	cacheName := strings.ReplaceAll(imageName, "/", "_") + "@" + tag
 	cacheDirectory := filepath.Clean(args.Cache + "/" + cacheName)
