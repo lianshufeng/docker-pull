@@ -2,12 +2,12 @@ package main
 
 import (
 	"archive/tar"
-	arg_tools "docker-pull/arg"
-	docker_tools "docker-pull/docker"
-	"docker-pull/file"
 	"encoding/json"
 	"flag"
 	"fmt"
+	arg_tools "github.com/lianshufeng/docker-pull/arg"
+	docker_tools "github.com/lianshufeng/docker-pull/docker"
+	"github.com/lianshufeng/docker-pull/file"
 	"github.com/panjf2000/ants"
 	"os"
 	"path/filepath"

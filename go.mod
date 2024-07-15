@@ -1,4 +1,4 @@
-module docker-pull
+module github.com/lianshufeng/docker-pull
 
 go 1.22
 

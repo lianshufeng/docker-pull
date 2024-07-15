@@ -1,8 +1,8 @@
 package docker_tools
 
 import (
-	"docker-pull/file"
 	"fmt"
+	"github.com/lianshufeng/docker-pull/file"
 	"io"
 	"net/http"
 	"os"
