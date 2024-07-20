@@ -310,7 +310,7 @@ func PullImage(images []arg_tools.Image, args arg_tools.Args) {
 	})
 
 	//启动线程进行检查任务是否下载完成
-	checkTaskCompletePool, _ := ants.NewPool(args.ThreadCount)
+	checkTaskCompletePool, _ := ants.NewPool(len(updateImages))
 	defer checkTaskCompletePool.Release()
 	var checkTaskWG sync.WaitGroup
 	updateImageProjects.Range(func(key, value interface{}) bool {
