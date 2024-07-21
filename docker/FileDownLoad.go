@@ -26,9 +26,9 @@ func MakeProcessFileName(DestFile string) string {
 // CompleteFile 是否完成文件下载
 func CompleteFile(DestFile string) bool {
 	// 进度文件
-	process_file_name := MakeProcessFileName(DestFile)
+	processFileName := MakeProcessFileName(DestFile)
 	// 目标文件存在且进度文件不存在,则下载完成
-	return file.IsExist(DestFile) && !file.IsExist(process_file_name)
+	return file.IsExist(DestFile) && !file.IsExist(processFileName)
 }
 
 func DownLoad(url string, headers map[string]string, DestFile string, proxy string, BuffByte int64) error {
