@@ -55,40 +55,14 @@ func DownLoadLayer(task DownLoadLayerTask) {
 	docker_tools.DownLoadLayer(task.Image.ImageName, task.Layer.Digest, task.Image.Mirror, task.Args.Proxy, task.Args.BuffByte, task.Output)
 }
 
-/**
- * 下载并解压
- */
-func DownAndUnGzip(task DownLoadLayerTask, cacheDirectory string, blobsDirectory string) {
-
-	//开始下载层
-	DownLoadLayer(task)
-
-	//层的目录
-	layerFile := cacheDirectory + "/" + task.FakeLayerId + ".gzip.tar"
-	fmt.Println("UnGzip : ", task.FakeLayerId)
-	//解压转换
-	UnSuccess, _ := file.UnGzip(layerFile, blobsDirectory+"/"+task.FakeLayerId+".tar")
-	//解压失败，重新下载
-	if UnSuccess == false {
-		fmt.Println("Re DownLoadLayer : ", task.FakeLayerId)
-		if file.IsExist(task.Output) {
-			fmt.Println("Delete : ", task.Output)
-			os.Remove(task.Output)
-		}
-		DownAndUnGzip(task, cacheDirectory, blobsDirectory)
-	}
-}
-
 // CheckImageProject /*
 func CheckImageProject(downloadPool *ants.Pool, imageProject ImageProject) bool {
 	count := 0
 	for _, layer := range imageProject.Manifest.Layers {
 		//层的存储文件
-		FakeLayerId := filepath.Base(layer.Digest)
-		FakeLayerId = MakeLayerId(FakeLayerId)
+		FakeLayerId := MakeLayerId(filepath.Base(layer.Digest))
 		layerStoreName := FakeLayerId + ".gzip.tar"
 		layerStoreFile := filepath.Clean(imageProject.CacheDirectory + "/" + layerStoreName)
-		processFileName := filepath.Clean(imageProject.CacheDirectory + "/" + docker_tools.MakeProcessFileName(layerStoreName))
 
 		destFile := filepath.Clean(imageProject.BlobsDirectory + "/" + FakeLayerId + ".tar")
 
@@ -97,9 +71,8 @@ func CheckImageProject(downloadPool *ants.Pool, imageProject ImageProject) bool 
 			count++
 			continue
 		}
-
 		//如果缓存文件存在，则解压，如果解压失败则重新添加下载任务
-		if file.IsExist(layerStoreFile) && !file.IsExist(processFileName) {
+		if docker_tools.CompleteFile(layerStoreFile) {
 			//解压转换
 			UnSuccess, _ := file.UnGzip(layerStoreFile, destFile)
 			//解压失败，重新下载
@@ -179,8 +152,31 @@ func CheckImageProject(downloadPool *ants.Pool, imageProject ImageProject) bool 
 // 当前下载的任务队列
 var currentDownloadTasks sync.Map
 
+// 所有的下载任务
+var totalDownloadTasks sync.Map
+
+// CheckDownLoadTask /**
+func CheckDownLoadTask(pool *ants.Pool) {
+	totalDownloadTasks.Range(func(key, value interface{}) bool {
+		fakeLayerId := key.(string)
+		downLoadLayerTask := value.(DownLoadLayerTask)
+		//下载完成
+		_, ok := currentDownloadTasks.Load(fakeLayerId)
+		if !ok {
+			//文件未下载完成则重新添加到下载任务队列
+			if !docker_tools.CompleteFile(downLoadLayerTask.Output) {
+				fmt.Println("add download task : ", downLoadLayerTask.Output)
+				addDownloadTasks(pool, downLoadLayerTask)
+			}
+		}
+		return true
+	})
+}
+
 func addDownloadTasks(pool *ants.Pool, task DownLoadLayerTask) {
 	fakeLayerId := task.FakeLayerId
+	//记录所有的下载记录
+	totalDownloadTasks.Store(fakeLayerId, task)
 	// 判断是否已经存在下载任务
 	_, ok := currentDownloadTasks.Load(fakeLayerId)
 	if ok {
@@ -294,6 +290,7 @@ func PullImage(images []arg_tools.Image, args arg_tools.Args) {
 	downloadPool, _ := ants.NewPool(args.ThreadCount)
 	defer downloadPool.Release()
 	currentDownloadTasks = sync.Map{}
+	totalDownloadTasks = sync.Map{}
 	updateLayers.Range(func(key, value interface{}) bool {
 		layerId := key.(string)
 		fakeLayerId := MakeLayerId(layerId)
@@ -308,6 +305,15 @@ func PullImage(images []arg_tools.Image, args arg_tools.Args) {
 		addDownloadTasks(downloadPool, downLoadTask)
 		return true
 	})
+
+	//启动下载任务检查定时器
+	checkDownLoadTaskTicker := time.NewTicker(10 * time.Second)
+	defer checkDownLoadTaskTicker.Stop()
+	go func() {
+		for range checkDownLoadTaskTicker.C {
+			CheckDownLoadTask(downloadPool)
+		}
+	}()
 
 	//启动线程进行检查任务是否下载完成
 	checkTaskCompletePool, _ := ants.NewPool(len(updateImages))
