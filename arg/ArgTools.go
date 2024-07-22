@@ -31,8 +31,7 @@ type Image struct {
 	Mirror    string
 }
 
-func ToArgs(defaultMirror string, InputName string) Image {
-	//提取tag
+func inputNameToImageName(defaultMirror string, InputName string) (string, string, string, string) {
 	var tag string
 	var digest string
 	imageName := InputName
@@ -48,17 +47,21 @@ func ToArgs(defaultMirror string, InputName string) Image {
 	} else {
 		tag = "latest"
 	}
+	return mirror, imageName, tag, digest
+}
 
-	imageNames := strings.Split(InputName, "/")
+func ToArgs(defaultMirror string, InputName string) Image {
+
+	mirror := defaultMirror
+	imageName := InputName
+	imageNames := strings.Split(imageName, "/")
 	if len(imageNames) == 1 {
-		imageName = "library/" + InputName
-	} else if len(imageNames) == 2 {
-		//nothing
+		imageName = "library/" + imageName
 	} else if len(imageNames) > 2 {
-		//取出除了最后2级以外的所有目录,兼容自定义域名
 		imageName = strings.Join(imageNames[len(imageNames)-2:len(imageNames)], "/")
 		mirror = strings.Join(imageNames[0:len(imageNames)-2], "/")
 	}
+	mirror, imageName, tag, digest := inputNameToImageName(mirror, imageName)
 
 	return Image{
 		InputName: InputName,
@@ -158,51 +161,4 @@ func LoadArgs() (Args, []Image) {
 		}
 	}
 	return defaultArgs, images
-
-	//imageName := os.Args[len(os.Args)-1:][0]
-
-	////提取tag
-	//var tag string
-	//var Digest string
-	//if strings.Contains(imageName, "@") {
-	//	Digest = imageName[strings.Index(imageName, "@")+1:]
-	//	tag = "latest"
-	//	imageName = imageName[:strings.Index(imageName, "@")]
-	//} else if strings.Contains(imageName, ":") {
-	//	at := strings.Index(imageName, ":")
-	//	tag = imageName[at+1:]
-	//	imageName = imageName[0:at]
-	//} else {
-	//	tag = "latest"
-	//}
-	//
-	////if len(imageNames) == 1 && !IsContainsMirror {
-	//imageNames := strings.Split(imageName, "/")
-	//if len(imageNames) == 1 {
-	//	imageName = "library/" + imageName
-	//} else if len(imageNames) == 2 {
-	//	//nothing
-	//} else if len(imageNames) > 2 {
-	//	//取出除了最后2级以外的所有目录,兼容自定义域名
-	//	imageName = strings.Join(imageNames[len(imageNames)-2:len(imageNames)], "/")
-	//	mirror = strings.Join(imageNames[0:len(imageNames)-2], "/")
-	//}
-	//
-	//return Args{
-	//	ImageName:        imageName,
-	//	Tag:              tag,
-	//	Digest:           Digest,
-	//	Mirror:           mirror,
-	//	Proxy:            proxy,
-	//	Architecture:     platform_architecture,
-	//	Variant:          platform_variant,
-	//	Os:               platform_os,
-	//	Cache:            cache,
-	//	CleanCache:       cleanCache,
-	//	CleanImage:       cleanImage,
-	//	ThreadCount:      ThreadCount,
-	//	BuffByte:         BuffByte,
-	//	IsLoad:           IsLoad,
-	//	DockerApiVersion: DockerApiVersion,
-	//}
 }

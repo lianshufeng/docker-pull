@@ -200,6 +200,11 @@ func PullImage(images []arg_tools.Image, args arg_tools.Args) {
 
 		//获取层的清单
 		manifest := docker_tools.GetManifests(image.ImageName, image.Digest, image.Tag, args.Os, args.Architecture, args.Variant, authToken.Token, image.Mirror, args.Proxy)
+		//跳过
+		if manifest.Config.Digest == "" {
+			fmt.Println("GetManifests Error :", image.ImageName)
+			continue
+		}
 
 		//查询本地镜像
 		if args.IsLoad {

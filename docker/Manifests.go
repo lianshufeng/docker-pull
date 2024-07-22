@@ -106,7 +106,8 @@ func GetManifests(imageName string, digest string, tag string, platform_os strin
 	}
 	if code != 200 {
 		fmt.Println("not found :", imageName, ", code :", code)
-		os.Exit(0)
+		//os.Exit(0)
+		return Manifest{}
 	}
 
 	var obj map[string]interface{}
@@ -158,6 +159,6 @@ func GetManifests(imageName string, digest string, tag string, platform_os strin
 	}
 	err := fmt.Errorf("not found : ", imageName+" : "+digest+" "+tag+"@"+platform_os+"/"+platform_architecture)
 	fmt.Fprintf(os.Stderr, "错误: %v\n", err)
-	os.Exit(1)
+	//os.Exit(1)
 	return Manifest{}
 }
