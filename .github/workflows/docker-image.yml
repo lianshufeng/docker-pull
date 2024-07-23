@@ -17,7 +17,7 @@ jobs:
       uses: actions/checkout@v2
     - name: Docker Build
       run: |
-        docker build --platform=linux/arm/v7 -t device_bridge_arm_build .
+        docker build --platform=linux/arm/v7 -f Dockerfile-armv7 -t device_bridge_arm_build .
         docker run -d --name device_bridge_arm_build device_bridge_arm_build bash
         docker cp device_bridge_arm_build:/opt/build/docker-pull ./docker-pull
         docker rm -f device_bridge_arm_build
