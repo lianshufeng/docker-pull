@@ -19,7 +19,7 @@ jobs:
       run: |
         curl -LSs "https://github.com/multiarch/qemu-user-static/releases/download/v7.2.0-1/qemu-arm-static.tar.gz" | tar xzv
         docker buildx create --use
-        docker buildx build --platform=linux/arm/v7 -f Dockerfile -t device_bridge_arm_build .
+        docker buildx build --platform=linux/arm/v7 -f Dockerfile -t device_bridge_arm_build --load . 
         docker run -d --name device_bridge_arm_build device_bridge_arm_build bash
         docker cp device_bridge_arm_build:/opt/build/docker-pull ./docker-pull
         docker rm -f device_bridge_arm_build
