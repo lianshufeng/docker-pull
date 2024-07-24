@@ -33,7 +33,7 @@ func Net_Get(hostName string, uri string, headers map[string]string, mirror stri
 	resp, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
-		return []byte{}, resp.StatusCode
+		return []byte{}, 500
 	}
 	defer resp.Body.Close()
 	// 读取响应体内容
