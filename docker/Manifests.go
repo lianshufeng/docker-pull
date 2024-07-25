@@ -111,24 +111,28 @@ func GetManifests(imageName string, digest string, tag string, platform_os strin
 	}
 
 	var obj map[string]interface{}
-	json.Unmarshal(body, &obj)
+	err := json.Unmarshal(body, &obj)
+	if err != nil {
+		return Manifest{}
+	}
 	if obj["schemaVersion"] == nil {
 		//异常
-		panic("request manifests error..")
+		fmt.Println("request manifests error..")
+		return Manifest{}
 	}
 
 	mediaType := obj["mediaType"].(string)
 
 	if mediaType == "application/vnd.docker.distribution.manifest.v2+json" {
-		var manifest Manifest
+		var manifest = Manifest{}
 		json.Unmarshal(body, &manifest)
 		return manifest
 	} else if mediaType == "application/vnd.oci.image.manifest.v1+json" {
-		var manifest Manifest
+		var manifest = Manifest{}
 		json.Unmarshal(body, &manifest)
 		return manifest
 	} else if mediaType == "application/vnd.oci.image.index.v1+json" { //oci 选择镜像
-		var manifest_v1 Manifest_v1
+		var manifest_v1 = Manifest_v1{}
 		json.Unmarshal(body, &manifest_v1)
 		for i := range manifest_v1.Manifests {
 			platform := manifest_v1.Manifests[i].Platform
@@ -149,16 +153,9 @@ func GetManifests(imageName string, digest string, tag string, platform_os strin
 				return GetManifests(imageName, manifest_v1.Manifests[i].Digest, "", platform_os, platform_architecture, platform_variant, _auth_token, mirror, proxy)
 			}
 
-			//匹配平台和cpu架构
-			//if platform.Os == platform_os && platform.Architecture == platform_architecture && platform.Variant == platform_variant {
-			//	_accept := manifest_v1.Manifests[i].MediaType
-			//	_auth_token := GetAuthToken(imageName, _accept, mirror, proxy).Token
-			//	return GetManifests(imageName, manifest_v1.Manifests[i].Digest, "", platform_os, platform_architecture, platform_variant, _auth_token, mirror, proxy)
-			//}
 		}
 	}
-	err := fmt.Errorf("not found : ", imageName+" : "+digest+" "+tag+"@"+platform_os+"/"+platform_architecture)
+	err = fmt.Errorf("not found : ", imageName+" : "+digest+" "+tag+"@"+platform_os+"/"+platform_architecture)
 	fmt.Fprintf(os.Stderr, "错误: %v\n", err)
-	//os.Exit(1)
 	return Manifest{}
 }

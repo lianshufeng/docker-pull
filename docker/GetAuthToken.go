@@ -18,6 +18,9 @@ func GetAuthToken(imageName string, accept string, mirror string, proxy string) 
 	}
 	body, _ := Net_Get("auth.docker.io", fmt.Sprintf("token?service=registry.docker.io&scope=repository:%s:pull", imageName), header, mirror, proxy)
 	var result AuthToken
-	json.Unmarshal(body, &result)
-	return result
+	err := json.Unmarshal(body, &result)
+	if err == nil {
+		return result
+	}
+	return AuthToken{}
 }

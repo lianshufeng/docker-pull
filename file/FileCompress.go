@@ -23,7 +23,8 @@ func UnGzip(SourceFile string, DestFile string) (bool, error) {
 	// 打开一个 Gzip 压缩文件
 	gzipFile, err := os.Open(SourceFile)
 	if err != nil {
-		panic(err)
+		fmt.Println("UnTar Error :", err)
+		return false, err
 	}
 	defer gzipFile.Close()
 
@@ -33,13 +34,15 @@ func UnGzip(SourceFile string, DestFile string) (bool, error) {
 	//写出文件
 	outputFile, err := os.Create(DestFile)
 	if err != nil {
-		panic(err)
+		fmt.Println("UnTar Error :", err)
+		return false, err
 	}
 	defer outputFile.Close()
 
 	_, err = io.Copy(outputFile, gzipReader)
 	if err != nil {
-		panic(err)
+		fmt.Println("UnTar Error :", err)
+		return false, err
 	}
 	return Success, err
 }

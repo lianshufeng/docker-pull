@@ -197,6 +197,10 @@ func PullImage(images []arg_tools.Image, args arg_tools.Args) {
 	for _, image := range images {
 		//获取token
 		authToken := docker_tools.GetAuthToken(image.ImageName, DefaultAccept, image.Mirror, args.Proxy)
+		if authToken.Token == "" {
+			fmt.Println("authToken Error :", image.ImageName)
+			continue
+		}
 
 		//获取层的清单
 		manifest := docker_tools.GetManifests(image.ImageName, image.Digest, image.Tag, args.Os, args.Architecture, args.Variant, authToken.Token, image.Mirror, args.Proxy)

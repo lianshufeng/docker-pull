@@ -19,7 +19,8 @@ func ImagePull(imageName string, pullOptions image.PullOptions) bool {
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
-		panic(err)
+		fmt.Println("Error creating client: %v\n", err)
+		return false
 	}
 	pullResponse, err := cli.ImagePull(ctx, imageName, pullOptions)
 
@@ -50,11 +51,13 @@ func ContainerList(listOptions container.ListOptions) []types.Container {
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
-		panic(err)
+		fmt.Println("Error creating client: %v\n", err)
+		return []types.Container{}
 	}
 	containers, err := cli.ContainerList(ctx, listOptions)
 	if err != nil {
-		panic(err)
+		fmt.Println("Error listing containers: %v\n", err)
+		return []types.Container{}
 	}
 	return containers
 }
@@ -63,7 +66,8 @@ func ContainerRemove(containerID string, options container.RemoveOptions) error 
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
-		panic(err)
+		fmt.Println("Error creating client: %v\n", err)
+		return err
 	}
 	err = cli.ContainerRemove(ctx, containerID, options)
 	return err
@@ -73,7 +77,8 @@ func ContainerCreate(config *container.Config, hostConfig *container.HostConfig,
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
-		panic(err)
+		fmt.Println("Error creating client: %v\n", err)
+		return container.CreateResponse{}, err
 	}
 	return cli.ContainerCreate(ctx, config, hostConfig, networkingConfig, platform, containerName)
 }
@@ -82,7 +87,8 @@ func ContainerStart(containerID string, options container.StartOptions) error {
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
-		panic(err)
+		fmt.Println("Error creating client: %v\n", err)
+		return err
 	}
 	err = cli.ContainerStart(ctx, containerID, options)
 	return err
@@ -92,7 +98,8 @@ func ContainerStop(containerID string, options container.StopOptions) error {
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
-		panic(err)
+		fmt.Println("Error creating client: %v\n", err)
+		return err
 	}
 	err = cli.ContainerStop(ctx, containerID, options)
 	return err
@@ -102,7 +109,8 @@ func ContainerPause(containerID string, signal string) error {
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
-		panic(err)
+		fmt.Println("Error creating client: %v\n", err)
+		return err
 	}
 	err = cli.ContainerPause(ctx, containerID)
 	return err
@@ -112,7 +120,8 @@ func ContainerKill(containerID string, signal string) error {
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
-		panic(err)
+		fmt.Println("Error creating client: %v\n", err)
+		return err
 	}
 	err = cli.ContainerKill(ctx, containerID, signal)
 	return err
@@ -122,7 +131,8 @@ func ContainerStats(containerID string, stream bool) (container.StatsResponseRea
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
-		panic(err)
+		fmt.Println("Error creating client: %v\n", err)
+		return container.StatsResponseReader{}, err
 	}
 	return cli.ContainerStats(ctx, containerID, stream)
 }
@@ -131,7 +141,8 @@ func ImageList(options image.ListOptions) ([]image.Summary, error) {
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
-		panic(err)
+		fmt.Println("Error creating client: %v\n", err)
+		return []image.Summary{}, err
 	}
 	return cli.ImageList(ctx, options)
 }
@@ -140,7 +151,8 @@ func ImageLoad(FileName string) bool {
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
-		panic(err)
+		fmt.Println("Error creating client: %v\n", err)
+		return false
 	}
 
 	file, _ := os.Open(FileName)
@@ -166,8 +178,6 @@ func ImageLoad(FileName string) bool {
 			fmt.Println("Error reading line:", err)
 			return false
 		}
-		//fmt.Println("load:", string(line))
-
 	}
 	return true
 
