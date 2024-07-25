@@ -117,7 +117,13 @@ func GetManifests(imageName string, digest string, tag string, platform_os strin
 	}
 	if obj["schemaVersion"] == nil {
 		//异常
-		fmt.Println("request manifests error..")
+		fmt.Println("request manifests error: ", body)
+		return Manifest{}
+	}
+
+	if obj["mediaType"] == nil {
+		//异常
+		fmt.Println("request manifests error: ", body)
 		return Manifest{}
 	}
 
