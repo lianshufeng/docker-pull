@@ -342,12 +342,38 @@ func PullImage(images []arg_tools.Image, args arg_tools.Args) {
 	//等待线程结束
 	checkTaskWG.Wait()
 
+	// 载入失败的
+	loadErrors := CheckImageLoad(args, updateImageProjects)
+	if len(loadErrors) > 0 {
+		fmt.Println("loadErrors : ", loadErrors)
+		PullImage(loadErrors, args)
+	}
+
 	//清除缓存
 	if args.CleanCache {
 		fmt.Println("cache delete :", cacheDirectory)
 		os.RemoveAll(cacheDirectory)
 	}
 
-	fmt.Println("Done ...")
+}
+
+func CheckImageLoad(args arg_tools.Args, updateImageProjects sync.Map) []arg_tools.Image {
+	//仅检查需要载入到docker的情况
+	if !args.IsLoad {
+		return []arg_tools.Image{}
+	}
+	var loadErrors = []arg_tools.Image{}
+	updateImageProjects.Range(func(key, value interface{}) bool {
+		imageProject := value.(ImageProject)
+		digest := imageProject.Manifest.Config.Digest
+		//查询本地镜像
+		image := docker_tools.GetImage(digest)
+		//加载失败
+		if image.ID == "" {
+			loadErrors = append(loadErrors, imageProject.Image)
+		}
+		return true
+	})
+	return loadErrors
 
 }

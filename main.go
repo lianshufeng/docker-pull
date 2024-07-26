@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	arg_tools "github.com/lianshufeng/docker-pull/arg"
 	"github.com/lianshufeng/docker-pull/core"
 	"os"
@@ -29,5 +30,8 @@ func main() {
 
 	//开始下载镜像
 	core.PullImage(images, arg)
+
+	//下载完成
+	fmt.Println("Done ...")
 
 }
