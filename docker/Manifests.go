@@ -145,12 +145,12 @@ func GetManifests(imageName string, digest string, tag string, platform_os strin
 
 			var IsMatch = false
 
-			if (platform_os != "" && platform_architecture != "" && platform_variant != "") && (platform.Os == platform_os && platform.Architecture == platform_architecture && platform.Variant == platform_variant) {
-				IsMatch = true
-			} else if (platform_os != "" && platform_architecture != "") && (platform.Os == platform_os && platform.Architecture == platform_architecture) {
-				IsMatch = true
-			} else if (platform_os != "") && (platform.Os == platform_os) {
-				IsMatch = true
+			if platform_os != "" && platform_architecture != "" && platform_variant != "" {
+				IsMatch = platform.Os == platform_os && platform.Architecture == platform_architecture && platform.Variant == platform_variant
+			} else if platform_os != "" && platform_architecture != "" {
+				IsMatch = platform.Os == platform_os && platform.Architecture == platform_architecture
+			} else if platform_os != "" {
+				IsMatch = platform.Os == platform_os
 			}
 
 			if IsMatch == true {
