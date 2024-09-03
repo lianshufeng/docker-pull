@@ -1,7 +1,7 @@
 services:
 
   docker_pull_build:
-    image: golang:1.23-alpine
+    image: golang:1.22-alpine
     volumes:
       - "../build:/opt/build"
       - "../:/opt/core"

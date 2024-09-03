@@ -21,9 +21,9 @@ const (
 	// 断点续传下载，偏移量值超文件最大值长度错误响应码
 	ErrRespCode = "416 Requested Range Not Satisfiable"
 	// 默认的文件块
-	DefaultChunkSize = 1024 * 1024 * 4
+	DefaultChunkSize = 1024 * 1024 * 200
 	// 默认下载线程数
-	DefaultDownloadThreadCount = 5
+	DefaultDownloadThreadCount = 3
 )
 
 // FileChunk 文件块
@@ -122,8 +122,7 @@ func DownLoad(url string, headers map[string]string, DestFile string, proxy stri
 		chunkFile := DestFile + fileDownloadInfo.FileChunks[i].FileChunkName
 		readFile, _ := os.OpenFile(chunkFile, os.O_RDWR, os.ModePerm)
 		defer readFile.Close()
-		data, _ := io.ReadAll(readFile)
-		fileHandle.Write(data)
+		io.Copy(fileHandle, readFile)
 		readFile.Close()
 		file.Remove(chunkFile)
 	}
@@ -150,6 +149,8 @@ func DownLoadChunkFile(DestFile string, fileChunks *FileChunk, url string, heade
 	}
 	req.Header.Set("Range", range01)
 
+	fmt.Println("download : ", url, fmt.Sprintf("%d/%d", fileChunks.RangeStart, fileChunks.RangeEnd))
+
 	// 创建 http 客户端
 	client := MakeHttpClient(proxy)
 	resp, err := client.Do(req)
@@ -171,16 +172,10 @@ func DownLoadChunkFile(DestFile string, fileChunks *FileChunk, url string, heade
 		}
 	}
 
-	//读取到内存里
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return false
-	}
-
 	// 写出到磁盘上
 	outputFile, _ := os.OpenFile(DestFile+fileChunks.FileChunkName, os.O_RDWR|os.O_TRUNC|os.O_CREATE, os.ModePerm)
 	defer outputFile.Close()
-	outputFile.Write(data)
+	io.Copy(outputFile, resp.Body)
 
 	return true
 }

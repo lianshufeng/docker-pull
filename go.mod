@@ -1,6 +1,6 @@
 module github.com/lianshufeng/docker-pull
 
-go 1.23
+go 1.22
 
 require (
 	github.com/docker/docker v27.2.0+incompatible
