@@ -1,4 +1,4 @@
-FROM --platform=linux/arm/v7 golang:1.22-alpine as builder
+FROM --platform=linux/arm/v7 golang:1.23-alpine as builder
 COPY qemu-arm-static /usr/bin/
 COPY ./ /core
 WORKDIR /core

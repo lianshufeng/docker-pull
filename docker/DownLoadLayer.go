@@ -12,12 +12,11 @@ func DownLoadLayer(imageName string, ublob string, mirror string, proxy string, 
 		fmt.Println("Download Complete : " + path.Base(outputFile))
 		return
 	}
-	authToken := GetAuthToken(imageName, "application/vnd.docker.distribution.manifest.v2+json", mirror, proxy)
-
 	url := MakeUrl("registry.hub.docker.com", fmt.Sprintf("v2/%s/blobs/%s", imageName, ublob), mirror)
-	headers := map[string]string{
-		"Authorization": "Bearer " + authToken.Token,
-	}
+
+	//刷新下载的header
+	headers := RefreshDownloadHeader(imageName, mirror, proxy)
+
 	err := DownLoad(url, headers, outputFile, proxy, BuffByte)
 
 	//如果有错误，延迟后重新下载
@@ -27,4 +26,11 @@ func DownLoadLayer(imageName string, ublob string, mirror string, proxy string, 
 		DownLoadLayer(imageName, ublob, mirror, proxy, BuffByte, outputFile)
 	}
 
+}
+
+func RefreshDownloadHeader(imageName string, mirror string, proxy string) map[string]string {
+	authToken := GetAuthToken(imageName, "application/vnd.docker.distribution.manifest.v2+json", mirror, proxy)
+	return map[string]string{
+		"Authorization": "Bearer " + authToken.Token,
+	}
 }
