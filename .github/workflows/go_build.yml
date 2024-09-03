@@ -18,7 +18,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: '^1.21'
+          go-version: '^1.23'
       - name: Prepare Release
         id: prepare_release
         run: |
@@ -40,7 +40,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
     - name: Docker Build
-      run: docker run --rm -v "$(pwd):/opt/core" -w /opt/core golang:1.22-alpine go build ./
+      run: docker run --rm -v "$(pwd):/opt/core" -w /opt/core golang:1.23-alpine go build ./
     - name: Prepare Release
       id: prepare_release
       run: |
@@ -131,7 +131,7 @@ jobs:
     - name: Setup Go
       uses: actions/setup-go@v2
       with:
-        go-version: '^1.21'
+        go-version: '^1.23'
     - name: Build
       run: |
         go build -o .\docker-pull.exe .
