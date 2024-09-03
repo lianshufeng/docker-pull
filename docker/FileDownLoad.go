@@ -111,8 +111,12 @@ func DownLoad(url string, headers map[string]string, DestFile string, proxy stri
 				return
 			}
 
-			// 进行分块下载
-			DownLoadChunkFile(DestFile, fileChunk, url, headers, proxy)
+			// 进行分块下载, 失败则删除
+			if DownLoadChunkFile(DestFile, fileChunk, url, headers, proxy) == false {
+				fmt.Println("down err : ", DestFile+fileChunk.FileChunkName)
+				os.Remove(DestFile + fileChunk.FileChunkName)
+			}
+
 		})
 	}
 	checkTaskWG.Wait()
@@ -120,16 +124,25 @@ func DownLoad(url string, headers map[string]string, DestFile string, proxy stri
 	// 合并文件
 	for i := range fileDownloadInfo.FileChunks {
 		chunkFile := DestFile + fileDownloadInfo.FileChunks[i].FileChunkName
+		if file.IsExist(chunkFile) == false {
+			return fmt.Errorf("down err , chunkFile : %s", chunkFile)
+		}
 		readFile, _ := os.OpenFile(chunkFile, os.O_RDWR, os.ModePerm)
 		defer readFile.Close()
 		io.Copy(fileHandle, readFile)
 		readFile.Close()
-		file.Remove(chunkFile)
+	}
+
+	// 清空块文件
+	for i := range fileDownloadInfo.FileChunks {
+		chunkFile := DestFile + fileDownloadInfo.FileChunks[i].FileChunkName
+		if file.IsExist(chunkFile) {
+			file.Remove(chunkFile)
+		}
 	}
 
 	// 保存配置(删除文件)
 	os.Remove(processFileName)
-
 	fileHandle.Close()
 
 	return IsDownLoadDone
@@ -175,9 +188,11 @@ func DownLoadChunkFile(DestFile string, fileChunks *FileChunk, url string, heade
 	// 写出到磁盘上
 	outputFile, _ := os.OpenFile(DestFile+fileChunks.FileChunkName, os.O_RDWR|os.O_TRUNC|os.O_CREATE, os.ModePerm)
 	defer outputFile.Close()
-	io.Copy(outputFile, resp.Body)
-
-	return true
+	copySize, _ := io.Copy(outputFile, resp.Body)
+	if copySize == (fileChunks.RangeEnd-fileChunks.RangeStart)+1 {
+		return true
+	}
+	return false
 }
 func writeSpaceFile(destFile string, fileDownloadInfo *FileDownloadInfo) {
 	file, _ := os.OpenFile(destFile, os.O_CREATE|os.O_RDWR, os.ModePerm)
@@ -211,7 +226,7 @@ func initProcessFile(fileDownloadInfo *FileDownloadInfo, url string, headers map
 	if (fileSize % DefaultChunkSize) > 0 {
 		fileDownloadInfo.FileChunks = append(fileDownloadInfo.FileChunks, FileChunk{
 			RangeStart:    int64(count) * DefaultChunkSize,
-			RangeEnd:      fileSize,
+			RangeEnd:      fileSize - 1,
 			IsDone:        false,
 			FileChunkName: "_" + strconv.FormatInt(int64(count), 10),
 		})
