@@ -21,7 +21,7 @@ const (
 	// 断点续传下载，偏移量值超文件最大值长度错误响应码
 	ErrRespCode = "416 Requested Range Not Satisfiable"
 	// 默认的文件块
-	DefaultChunkSize = 1024 * 1024 * 200
+	DefaultChunkSize = 1024 * 1024 * 64
 	// 默认下载线程数
 	DefaultDownloadThreadCount = 3
 )
