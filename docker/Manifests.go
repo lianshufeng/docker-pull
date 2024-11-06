@@ -99,7 +99,7 @@ func GetManifests(imageName string, digest string, tag string, platform_os strin
 			"Authorization": "Bearer " + auth_token,
 			"Accept":        Accept,
 		}
-		body, code = Net_Get("registry-1.docker.io", fmt.Sprintf("v2/%s/manifests/%s", imageName, queryFlag), header, mirror, proxy)
+		body, code, _ = Net_Get("registry-1.docker.io", fmt.Sprintf("v2/%s/manifests/%s", imageName, queryFlag), header, mirror, proxy)
 		if code == 200 {
 			break
 		}
